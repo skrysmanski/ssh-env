@@ -116,9 +116,17 @@ function Add-SshKeyToRunningAgent([String] $SshPrivateKeyPath, [int] $KeyTimeToL
 		# Add key indefinitely (until the agent is stopped)
 		& ssh-add "$SshPrivateKeyPath"
 	}
+
+	if (-Not $?) {
+		Write-Error 'ssh-add failed'
+	}
 }
 
 function Ensure-SshAgentState([String] $SshPrivateKeyPath) {
+	if (-Not (Test-Path $SshPrivateKeyPath)) {
+		Write-Error "Private SSH key doesn't exist at: $SshPrivateKeyPath"
+	}
+
 	$agentConf = Get-SshAgentConfig
 	if (-Not $agentConf) {
 		$agentConfPath = Get-SshAgentConfigFilePath
