@@ -1,7 +1,7 @@
 # Portable SSH Environment #
-The goal of this project is to provide a cross-platform, portable, easy-to-use, and yet secure environment for connecting to SSH servers (via the command line).
+Ssh-env provides a cross-platform, portable, easy-to-use, and yet secure environment for connecting to SSH servers (via the command line).
 
-Portable in this case means that you can just copy the whole directory onto a different computer. The easiest way to do so is to store the directory in a version control system like Git or Mercurial (or even Subversion).
+Portable in this case means that you can just copy the whole directory onto a different computer.
 
 ## Required Software ##
 To use this project, you only need the following pieces of software:
