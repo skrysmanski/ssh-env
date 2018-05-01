@@ -1,0 +1,23 @@
+Usage:
+  ssh-env [ssh] [<user>@]<ssh-server>
+  ssh-env agent (status|stop|config)
+  ssh-env keys (create|install|check)
+  ssh-env (help|--help|-h)
+  ssh-env (version|--version|-v)
+
+Commands:
+  ssh [<user>@]<ssh-server>  SSH into the specified server. The command is optional. Use it when
+                             the server name conflicts with any of the other commands.
+
+  agent status               Check whether the ssh-agent is running and has a private key loaded
+  agent stop                 Stops the ssh-agent (removing any loaded private key from memory)
+  agent config               Creates configuration file for ssh-agent (per computer and not shared)
+
+  keys create                Create SSH key pair (bcrypt encrypted)
+  keys install [<user>@]<ssh-server>
+                             Installs the public key on the specified server (requires password
+                             authentication)
+  keys check                 Checks the SSH key pair for problems (no password, weak encryption)
+
+  help, --help, -h           Displays this help page
+  version, --version, -v     Prints the ssh-env and OpenSSH client version

@@ -1,0 +1,17 @@
+# ssh (secure shell) configuration file
+# See: https://linux.die.net/man/5/ssh_config
+
+# Do not hash hostnames in "known_hosts". While this is a good protection against
+# attackers harvesting a list of known hosts when a machine is compromised, this
+# also makes maintaining the list very difficult. Since the point of this Docker
+# image is to have a convenient list of known hosts, hashing them doesn't improve
+# security in any way.
+HashKnownHosts no
+
+# Don't record the IP addresses (additionally to DNS names) in the "known_hosts"
+# file. If you're paranoid you may want to set this to "yes". For dynamic DNS
+# hosts, this will just create lots of entries in the "known_hosts" file. Can
+# also be set directly on "Host" entries.
+CheckHostIP no
+
+# Add host configs below. See README.md for some examples.
