@@ -3,13 +3,6 @@ set -e
 
 REPO_URL="https://github.com/skrysmanski/ssh-env"
 
-command -v pwsh >/dev/null 2>&1 || {
-	echo "ERROR: PowerShell is not installed"
-	echo "Check $REPO_URL#required-software for details."
-	echo
-	exit 1
-}
-
 command -v git >/dev/null 2>&1 || {
 	echo "ERROR: Git is not installed"
 	echo "Check $REPO_URL#required-software for details."
@@ -39,8 +32,9 @@ umask g-rwx,o-rwx
 
 echo
 
+# --depth=1 only grabs the newest revision
 git clone --depth=1 $REPO_URL.git "$install_dir" || {
-	printf "Error: git clone of ssh-env repo failed\n"
+	echo "ERROR: git clone of ssh-env repo failed"
 	exit 1
 }
 
