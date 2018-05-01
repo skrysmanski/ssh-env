@@ -14,6 +14,31 @@ On Linux and macOS, all packages are usually already installed.
 
 On Windows, the easiest way to get SSH is to install [Git for Windows](https://git-for-windows.github.io/). You may also use alternatives like Cygwin if you like but this is untested.
 
+## Basic Installation
+Ssh-env is installed by running one of the following commands in your terminal.
+
+### Linux and macOS
+You can install ssh-env with either `curl` or `wget`.
+
+#### Install with curl
+
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/skrysmanski/ssh-env/master/app/bootstrapping/install.sh)"
+
+#### Install with wget
+
+    sh -c "$(wget https://raw.githubusercontent.com/skrysmanski/ssh-env/master/app/bootstrapping/install.sh -O -)"
+
+### Windows
+You can install ssh-env with either a *cmd* or a *PowerShell* prompt.
+
+#### Install with cmd
+
+    powershell -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/skrysmanski/ssh-env/master/app/bootstrapping/install.ps1'))"
+
+#### Install with PowerShell
+
+    Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/skrysmanski/ssh-env/master/app/bootstrapping/install.ps1'))
+
 ## Getting started ##
 First you need to clone or download this repository to your computer. It's recommended to clone the repository. This way you can more easily see what ssh-env actually does on your disk.
 
