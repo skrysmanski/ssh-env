@@ -31,6 +31,8 @@ function Get-SshDataRepo {
 		Write-Error "Cloning '$gitUrl' failed"
 	}
 
+	Ensure-CorrectSshKeyPermissions
+
 	Write-Host
 	Write-Host -NoNewline 'Cloning SSH data repository: '
 	Write-Host -ForegroundColor Green 'sucess'
