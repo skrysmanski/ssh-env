@@ -27,11 +27,12 @@ function Get-SshAgentStatus {
 		# agent_run_state: 0=agent running w/ key; 1=agent w/o key; 2=agent not running
 		try {
 			& ssh-add -l 2>&1 | Out-Null
+			return [SshAgentStatus]$LASTEXITCODE
 		}
 		catch {
 			# Ignore - we get this when no agent is running.
+			return [SshAgentStatus]::NotRunning
 		}
-		return [SshAgentStatus]$LASTEXITCODE
 	}
 }
 
