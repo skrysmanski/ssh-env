@@ -1,22 +1,10 @@
 # Stop on every error
 $script:ErrorActionPreference = 'Stop'
 
-Import-Module "$PSScriptRoot/Utils.psm1" -DisableNameChecking
+$script:SshEnvBasePath = Resolve-Path "$PSScriptRoot/.."
 
-function Set-SshEnvPaths([string] $SshDataPath = 'ssh-data', [string] $LocalDataPath = '.local') {
-	Sync-CurrentWorkingDirectory
-
-	# NOTE: We can't use "Resolve-Path" here as the directory may not yet exist.
-	$script:sshDataPath = [Io.Path]::GetFullPath($SshDataPath)
-	$script:localDataPath = [Io.Path]::GetFullPath($LocalDataPath)
-}
-
-function Get-SshEnvPath([string] $Path, [string] $PathName, [bool] $CreateIfNotExists) {
-	if (-Not $Path) {
-		# NOTE: If you get here but can't explain why, then maybe some script imported
-		#  this module using "-Force" thereby clearing all "$script:xxx" variables.
-		Write-Error "$PathName is not configured"
-	}
+function Get-SshEnvPath([string] $RelativePath, [bool] $CreateIfNotExists) {
+	$Path = Join-Path $script:SshEnvBasePath $RelativePath
 
 	if ($CreateIfNotExists -And (-Not (Test-Path $Path -PathType Container))) {
 		# IMPORTANT: We must use '| Out-Null' here or the directory will be the
@@ -29,9 +17,9 @@ function Get-SshEnvPath([string] $Path, [string] $PathName, [bool] $CreateIfNotE
 }
 
 function Get-SshDataPath([bool] $CreateIfNotExists = $true) {
-	return Get-SshEnvPath $script:sshDataPath -PathName 'sshDataPath' -CreateIfNotExists $CreateIfNotExists
+	return Get-SshEnvPath 'ssh-data' -CreateIfNotExists $CreateIfNotExists
 }
 
 function Get-SshLocalDataPath([bool] $CreateIfNotExists = $true) {
-	return Get-SshEnvPath $script:localDataPath -PathName 'localDataPath' -CreateIfNotExists $CreateIfNotExists
+	return Get-SshEnvPath '.local' -CreateIfNotExists $CreateIfNotExists
 }

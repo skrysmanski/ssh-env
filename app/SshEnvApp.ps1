@@ -59,8 +59,6 @@ function Execute-SshEnvApp {
 	# Make sure everything is installed properly.
 	Assert-SoftwareInstallation
 
-	Set-SshEnvPaths
-
 	Assert-FolderIsEncrypted
 	Ensure-CorrectSshKeyPermissions
 
