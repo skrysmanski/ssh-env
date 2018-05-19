@@ -15,14 +15,6 @@ if ($args.Length -eq 0) {
 	exit 0
 }
 
-# Make sure everything is installed properly.
-Assert-SoftwareInstallation
-
-Set-SshEnvPaths
-
-Assert-FolderIsEncrypted
-Ensure-CorrectSshKeyPermissions
-
 function Test-IsSshDataPathAvailable {
 	$sshDataPath = Get-SshDataPath -CreateIfNotExists $false
 
@@ -63,115 +55,146 @@ function Invoke-SshWithAgent {
 	Invoke-Ssh @args
 }
 
-switch -Regex ($args[0]) {
-	'agent' {
-		switch ($args[1]) {
-			'status' {
-				Write-SshAgentStatus
-				break
-			}
+function Execute-SshEnvApp {
+	# Make sure everything is installed properly.
+	Assert-SoftwareInstallation
 
-			'config' {
-				Configure-SshAgent
-				break
-			}
+	Set-SshEnvPaths
 
-			'stop' {
-				$stopped = Stop-SshAgent
-				if ($stopped) {
-					Write-Host 'ssh-agent: stopped'
+	Assert-FolderIsEncrypted
+	Ensure-CorrectSshKeyPermissions
+
+	switch -Regex ($args[0]) {
+		'agent' {
+			switch ($args[1]) {
+				'status' {
+					Write-SshAgentStatus
+					break
 				}
-				else {
-					Write-Host 'ssh-agent: not running'
+
+				'config' {
+					Configure-SshAgent
+					break
 				}
-				break
-			}
 
-			'' {
-				Write-HelpAndExit "Missing 'agent' command"
-				break
-			}
+				'stop' {
+					$stopped = Stop-SshAgent
+					if ($stopped) {
+						Write-Host 'ssh-agent: stopped'
+					}
+					else {
+						Write-Host 'ssh-agent: not running'
+					}
+					break
+				}
 
-			default {
-				Write-HelpAndExit "Unknown 'agent' command: $($args[1])"
-				break
+				'' {
+					Write-HelpAndExit "Missing 'agent' command"
+					break
+				}
+
+				default {
+					Write-HelpAndExit "Unknown 'agent' command: $($args[1])"
+					break
+				}
 			}
+			break
 		}
-		break
-	}
 
 
-	'keys' {
-		switch ($args[1]) {
-			'create' {
-				# Special case: If the ssh data directory is not yet created, don't call New-SshKey as this will
-				# be called from the bootstrapping process anyways.
-				if (Test-IsSshDataPathAvailable) {
-					New-SshKey
+		'keys' {
+			switch ($args[1]) {
+				'create' {
+					# Special case: If the ssh data directory is not yet created, don't call New-SshKey as this will
+					# be called from the bootstrapping process anyways.
+					if (Test-IsSshDataPathAvailable) {
+						New-SshKey
+					}
+					else {
+						# This will also create the key.
+						Assert-SshDataIsAvailable
+					}
+					break
 				}
-				else {
-					# This will also create the key.
+
+				'install' {
 					Assert-SshDataIsAvailable
+
+					$target = $args[2]
+					if (-Not $target) {
+						Write-HelpAndExit 'Missing target server where to install the key'
+					}
+					Install-SshKey $target
+					break
 				}
-				break
-			}
 
-			'install' {
-				Assert-SshDataIsAvailable
+				'check' {
+					Assert-SshDataIsAvailable
 
-				$target = $args[2]
-				if (-Not $target) {
-					Write-HelpAndExit 'Missing target server where to install the key'
+					Check-SshKeyEncryption
+					break
 				}
-				Install-SshKey $target
-				break
-			}
 
-			'check' {
-				Assert-SshDataIsAvailable
+				'' {
+					Write-HelpAndExit "Missing 'keys' command"
+					break
+				}
 
-				Check-SshKeyEncryption
-				break
+				default {
+					Write-HelpAndExit "Unknown 'keys' command: $($args[1])"
+					break
+				}
 			}
-
-			'' {
-				Write-HelpAndExit "Missing 'keys' command"
-				break
-			}
-
-			default {
-				Write-HelpAndExit "Unknown 'keys' command: $($args[1])"
-				break
-			}
+			break
 		}
-		break
+
+		'version|--version|-v' {
+			$version = Get-EnvVersion
+			Write-Host "ssh-env version $version"
+
+			& ssh -V
+
+			$sshCommand = Get-Command 'ssh'
+			$sshBinariesPath = Split-Path $sshCommand.Source -Parent
+			Write-Host -ForegroundColor DarkGray "Using SSH binaries from: $sshBinariesPath"
+			break
+		}
+
+		'-h|--help|help' {
+			Write-Help
+			break
+		}
+
+		'ssh' {
+			$sshArgs = $args[1..$args.Length] # Remove first item ('ssh')
+			Invoke-SshWithAgent @sshArgs
+			break
+		}
+
+		default {
+			Invoke-SshWithAgent @args
+			break
+		}
 	}
+}
 
-	'version|--version|-v' {
-		$version = Get-EnvVersion
-		Write-Host "ssh-env version $version"
-
-		& ssh -V
-
-		$sshCommand = Get-Command 'ssh'
-		$sshBinariesPath = Split-Path $sshCommand.Source -Parent
-		Write-Host -ForegroundColor DarkGray "Using SSH binaries from: $sshBinariesPath"
-		break
-	}
-
-	'-h|--help|help' {
-		Write-Help
-		break
-	}
-
-	'ssh' {
-		$sshArgs = $args[1..$args.Length] # Remove first item ('ssh')
-		Invoke-SshWithAgent @sshArgs
-		break
-	}
-
-	default {
-		Invoke-SshWithAgent @args
-		break
-	}
+try {
+	Execute-SshEnvApp @args
+}
+catch [Microsoft.PowerShell.Commands.WriteErrorException] {
+	# Print error messages (without stacktrace)
+	Write-Host -ForegroundColor Red $_.Exception.Message
+	exit 1
+}
+catch [System.Management.Automation.RuntimeException] {
+	# A thrown string
+	Write-Host -ForegroundColor Red $($_.Exception.Message)
+	Write-Host -ForegroundColor Red $_.ScriptStackTrace
+	exit 1
+}
+catch {
+	# Print proper exception message (including stack trace)
+	Write-Host -ForegroundColor Red "$($_.Exception.GetType().Name): $($_.Exception.Message)"
+	Write-Host -ForegroundColor Red $_.ScriptStackTrace
+	exit 1
 }
