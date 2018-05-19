@@ -186,15 +186,16 @@ catch [Microsoft.PowerShell.Commands.WriteErrorException] {
 	Write-Host -ForegroundColor Red $_.Exception.Message
 	exit 1
 }
-catch [System.Management.Automation.RuntimeException] {
-	# A thrown string
-	Write-Host -ForegroundColor Red $($_.Exception.Message)
-	Write-Host -ForegroundColor Red $_.ScriptStackTrace
-	exit 1
-}
 catch {
 	# Print proper exception message (including stack trace)
-	Write-Host -ForegroundColor Red "$($_.Exception.GetType().Name): $($_.Exception.Message)"
+	# NOTE: We can't create a catch block for "RuntimeException" as every exception
+	#   seems to be interpreted as RuntimeException.
+	if ($_.Exception.GetType() -eq [System.Management.Automation.RuntimeException]) {
+		Write-Host -ForegroundColor Red $_.Exception.Message
+	}
+	else {
+		Write-Host -ForegroundColor Red "$($_.Exception.GetType().Name): $($_.Exception.Message)"
+	}
 	Write-Host -ForegroundColor Red $_.ScriptStackTrace
 	exit 1
 }
