@@ -76,11 +76,11 @@ function Start-SshAgent {
 	$agentEnv = & ssh-agent -c
 
 	if (-Not $?) {
-		Write-Error "'ssh-agent -c' failed."
+		throw "'ssh-agent -c' failed."
 	}
 
 	if (-Not $agentEnv) {
-		Write-Error "'ssh-agent -c' didn't return any configuration"
+		throw "'ssh-agent -c' didn't return any configuration"
 	}
 
 	Save-SshAgentEnv $agentEnv
@@ -119,7 +119,7 @@ function Add-SshKeyToRunningAgent([String] $SshPrivateKeyPath, [int] $KeyTimeToL
 	}
 
 	if (-Not $?) {
-		Write-Error 'ssh-add failed'
+		throw 'ssh-add failed'
 	}
 }
 
