@@ -41,12 +41,12 @@ In the following `git` commands the option `--depth=1` make git clone only the n
 
     mkdir ~/ssh-env
     chmod 0700 ~/ssh-env
-    git clone --depth=1 https://github.com/skrysmanski/ssh-env ~/ssh-env
+    git clone --depth=1 https://github.com/skrysmanski/ssh-env.git ~/ssh-env
 
 **Windows**
 
     mkdir "%USERPROFILE%\ssh-env"
-    git clone --depth=1 https://github.com/skrysmanski/ssh-env "%USERPROFILE%\ssh-env"
+    git clone --depth=1 https://github.com/skrysmanski/ssh-env.git "%USERPROFILE%\ssh-env"
 
 
 ### Verifying the installation
