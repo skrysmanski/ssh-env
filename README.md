@@ -134,7 +134,7 @@ Initialized empty Git repository in /Users/manski/ssh-env/ssh-data/.git/
 Creating SSH data folder: sucess
 ```
 
-**Note:** If you already have an SSH key pair, you can use it. See [Importing an Existing SSH Key Pair](#markdown-header-importing-an-existing-ssh-key-pair) below.
+**Note:** If you already have an SSH key pair, you can use it. See [Importing an Existing SSH Key Pair](#importing-an-existing-ssh-key-pair) below.
 
 Now you're all set to interact with your first SSH server.
 
