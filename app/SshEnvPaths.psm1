@@ -16,7 +16,7 @@ function Get-SshEnvPath([string] $RelativePath, [bool] $CreateIfNotExists) {
 	return $Path
 }
 
-function Get-SshDataPath([bool] $CreateIfNotExists = $true) {
+function Get-SshDataPath([bool] $CreateIfNotExists = $false) {
 	return Get-SshEnvPath 'ssh-data' -CreateIfNotExists $CreateIfNotExists
 }
 

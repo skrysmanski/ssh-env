@@ -1,6 +1,7 @@
 Usage:
   ssh-env [ssh] [<user>@]<ssh-server>
   ssh-env agent (status|stop|config)
+  ssh-env datadir (init|clone)
   ssh-env keys (create|install|check)
   ssh-env (help|--help|-h)
   ssh-env (version|--version|-v)
@@ -12,6 +13,9 @@ Commands:
   agent status               Check whether the ssh-agent is running and has a private key loaded
   agent stop                 Stops the ssh-agent (removing any loaded private key from memory)
   agent config               Creates configuration file for ssh-agent (per computer and not shared)
+
+  datadir init               Creates a fresh ssh data dir (containing the ssh key pair and ssh config)
+  datadir clone              Clones an existing ssh data dir with git
 
   keys create                Create SSH key pair (bcrypt encrypted)
   keys install [<user>@]<ssh-server>

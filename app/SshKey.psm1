@@ -6,14 +6,14 @@ Import-Module "$PSScriptRoot/Utils.psm1" -DisableNameChecking
 Import-Module "$PSScriptRoot/SshConfig.psm1" -DisableNameChecking
 
 function New-SshKey {
-	$sshPrivateKeyPath = Get-SshPrivateKeyPath
-
 	# Request the user's name from the user. Note this is actually just
 	# a comment and is copied over to the target system when running
 	# "install-key". There it is then used to make it easier to differentiate
 	# the various authorized keys (as stored in "~/.ssh/authorized_keys").
 	$userName = [Environment]::UserName
 	$certName = Prompt-Text "Who does this certificate belong to?" -DefaultValue $userName
+
+	$sshPrivateKeyPath = Get-SshPrivateKeyPath -CreateDirIfNotExists $true
 
 	# Parameters:
 	# -o : store private key with bcrypt encryption (which makes brute-force decrypting hard)

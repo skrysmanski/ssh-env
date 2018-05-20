@@ -3,19 +3,28 @@ $script:ErrorActionPreference = 'Stop'
 
 Import-Module "$PSScriptRoot/SshEnvPaths.psm1" -DisableNameChecking
 
-function Get-SshConfigPath([bool] $RuntimeConfig = $true) {
+function Get-SshConfigPath([bool] $RuntimeConfig = $true, [bool] $CreateDirIfNotExists = $false) {
 	if ($runtimeConfig) {
 		$localDataPath = Get-SshLocalDataPath
 		return Join-Path $localDataPath 'ssh.generated.conf'
 	}
 	else {
-		$sshDataPath = Get-SshDataPath
+		$sshDataPath = Get-SshDataPath -CreateIfNotExists $CreateDirIfNotExists
 		return Join-Path $sshDataPath 'config'
 	}
 }
 
-function Get-SshPrivateKeyPath {
-	$sshDataPath = Get-SshDataPath
+function New-DefaultSshConfig {
+	$sshConfigPath = Get-SshConfigPath -RuntimeConfig $false -CreateDirIfNotExists $true
+	if (Test-Path $sshConfigPath) {
+		throw 'ssh config file already exists'
+	}
+
+	Copy-Item "$PSScriptRoot/default-ssh-config.conf" $sshConfigPath
+}
+
+function Get-SshPrivateKeyPath([bool] $CreateDirIfNotExists = $false) {
+	$sshDataPath = Get-SshDataPath -CreateIfNotExists $CreateDirIfNotExists
 	return Join-Path $sshDataPath 'id_rsa'
 }
 

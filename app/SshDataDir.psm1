@@ -1,31 +1,42 @@
 # Stop on every error
 $script:ErrorActionPreference = 'Stop'
 
-Import-Module "$PSScriptRoot/../SshConfig.psm1" -DisableNameChecking
-Import-Module "$PSScriptRoot/../SshEnvPaths.psm1" -DisableNameChecking
-Import-Module "$PSScriptRoot/../SshKey.psm1" -DisableNameChecking
-Import-Module "$PSScriptRoot/../Utils.psm1" -DisableNameChecking
+Import-Module "$PSScriptRoot/SshEnvPaths.psm1" -DisableNameChecking
+Import-Module "$PSScriptRoot/Utils.psm1" -DisableNameChecking
+Import-Module "$PSScriptRoot/SshKey.psm1" -DisableNameChecking
+Import-Module "$PSScriptRoot/SshConfig.psm1" -DisableNameChecking
 
-function Install-SshDataDir {
+#
+# Checks whether the SSH data dir exists and is not empty. If this function returns
+# $false, a new data dir can be created or cloned.
+#
+function Test-SshDataDirExists {
 	$sshDataPath = Get-SshDataPath
-	Write-Host -ForegroundColor DarkGray "Storing SSH data in: $sshDataPath"
-	Write-Host
 
-	$hasDataRepo = Prompt-YesNo 'Do you have a Git repository with your SSH data?'
-	Write-Host
-	if ($hasDataRepo) {
-		Get-SshDataRepo
+	if (-Not (Test-Path $sshDataPath)) {
+		return $false
 	}
-	else {
-		New-SshDataRepo
+
+	if (Test-IsFolderEmpty $sshDataPath) {
+		# Data path exists but is empty.
+		return $false
+	}
+
+	return $true
+}
+
+function Assert-SshDataDirDoesntExist {
+	if (Test-SshDataDirExists) {
+		Write-Error 'The data directory already exists.'
 	}
 }
 
-function Get-SshDataRepo {
-	$sshDataPath = Get-SshDataPath
+function Clone-DataDir {
+	Assert-SshDataDirDoesntExist
 
 	$gitUrl = Prompt-Text 'URL to SSH data Git repository' -AllowEmpty $false
 
+	$sshDataPath = Get-SshDataPath -CreateIfNotExists $true
 	& git clone $gitUrl $sshDataPath
 	if (-Not $?) {
 		Write-Error "Cloning '$gitUrl' failed"
@@ -39,8 +50,8 @@ function Get-SshDataRepo {
 	Write-Host
 }
 
-function New-SshDataRepo {
-	$sshDataPath = Get-SshDataPath
+function New-DataDir {
+	Assert-SshDataDirDoesntExist
 
 	$hasSshKey = Prompt-YesNo 'Do you have an SSH key pair (in case of doubt: no)?'
 	if (-Not $hasSshKey) {
@@ -49,30 +60,32 @@ function New-SshDataRepo {
 		Write-Host
 	}
 
+	$sshDataPath = Get-SshDataPath -CreateIfNotExists $true
+
 	# Create default config file
-	Copy-Item "$PSScriptRoot/ssh-config-template.txt" "$sshDataPath/config"
+	New-DefaultSshConfig
+
+	# Create empty known_hosts file so that it can be added to Git (or whatever vcs the user wants to use).
+	New-Item "$sshDataPath/known_hosts" -ItemType File | Out-Null
 
 	$createGitRepo = Prompt-YesNo 'Do you want to version the SSH data with Git?' -DefaultValue $true
 	if ($createGitRepo) {
-		# Create empty known_hosts file so that it can be added to Git.
-		New-Item "$sshDataPath/known_hosts" -ItemType File | Out-Null
-
 		try {
 			Push-Location $sshDataPath
 
 			& git init .
 			if (-Not $?) {
-				Write-Error 'git init failed'
+				throw 'git init failed'
 			}
 
 			& git add *
 			if (-Not $?) {
-				Write-Error 'git add failed'
+				throw 'git add failed'
 			}
 
 			& git commit -m 'SSH data repository created'
 			if (-Not $?) {
-				Write-Error 'git commit failed'
+				throw 'git commit failed'
 			}
 		}
 		finally {

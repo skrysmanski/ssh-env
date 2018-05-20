@@ -9,47 +9,14 @@ Import-Module "$PSScriptRoot/SshKey.psm1" -DisableNameChecking
 Import-Module "$PSScriptRoot/SshEnvAppAux.psm1" -DisableNameChecking
 Import-Module "$PSScriptRoot/Ssh.psm1" -DisableNameChecking
 Import-Module "$PSScriptRoot/Installation.psm1" -DisableNameChecking
+Import-Module "$PSScriptRoot/SshDataDir.psm1" -DisableNameChecking
 
 if ($args.Length -eq 0) {
 	Write-Help 'No command specified'
 	exit 0
 }
 
-function Test-IsSshDataPathAvailable {
-	$sshDataPath = Get-SshDataPath -CreateIfNotExists $false
-
-	if (-Not (Test-Path $sshDataPath)) {
-		return $false
-	}
-
-	if (Test-IsFolderEmpty $sshDataPath) {
-		# Data path exists but is empty.
-		return $false
-	}
-
-	return $true
-}
-
-function Assert-SshDataIsAvailable {
-	if (-Not (Test-IsSshDataPathAvailable)) {
-		Write-Host
-		Write-Host -ForegroundColor Cyan 'No SSH data available. Starting setup process...'
-		Write-Host
-
-		Import-Module "$PSScriptRoot/bootstrapping/Bootstrapping.psm1" -DisableNameChecking
-		Install-SshDataDir
-
-		$sshPrivateKeyPath = Get-SshPrivateKeyPath
-		if (-Not (Test-Path $sshPrivateKeyPath)) {
-			# SSH private key not yet there. User chose to import it manually. We can't continue until he does.
-			exit 0
-		}
-	}
-}
-
 function Invoke-SshWithAgent {
-	Assert-SshDataIsAvailable
-
 	$privateKeyPath = Get-SshPrivateKeyPath
 	Ensure-SshAgentState -SshPrivateKeyPath $privateKeyPath
 	Invoke-Ssh @args
@@ -99,25 +66,40 @@ function Execute-SshEnvApp {
 			break
 		}
 
+		'datadir' {
+			switch ($args[1]) {
+				'clone' {
+					Clone-DataDir
+					break
+				}
+
+				'init' {
+					New-DataDir
+					break
+				}
+
+				'' {
+					Write-HelpAndExit "Missing 'datadir' command"
+					break
+				}
+
+				default {
+					Write-HelpAndExit "Unknown 'datadir' command: $($args[1])"
+					break
+				}
+			}
+			break
+		}
+
 
 		'keys' {
 			switch ($args[1]) {
 				'create' {
-					# Special case: If the ssh data directory is not yet created, don't call New-SshKey as this will
-					# be called from the bootstrapping process anyways.
-					if (Test-IsSshDataPathAvailable) {
-						New-SshKey
-					}
-					else {
-						# This will also create the key.
-						Assert-SshDataIsAvailable
-					}
+					New-SshKey
 					break
 				}
 
 				'install' {
-					Assert-SshDataIsAvailable
-
 					$target = $args[2]
 					if (-Not $target) {
 						Write-HelpAndExit 'Missing target server where to install the key'
@@ -127,8 +109,6 @@ function Execute-SshEnvApp {
 				}
 
 				'check' {
-					Assert-SshDataIsAvailable
-
 					Check-SshKeyEncryption
 					break
 				}
