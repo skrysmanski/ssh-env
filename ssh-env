@@ -1,8 +1,8 @@
 #!/bin/bash
 which pwsh >/dev/null
 if [ ! $? ]; then
-	echo "ERROR: PowerShell is not installed"
-	exit 1
+    echo "ERROR: PowerShell is not installed"
+    exit 1
 fi
 
 BASE_DIR=$( dirname "${BASH_SOURCE[0]}" )
