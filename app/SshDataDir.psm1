@@ -78,7 +78,11 @@ function New-DataDir {
 				throw 'git init failed'
 			}
 
-			& git add *
+			# Disable Git's auto eol conversions for the data dir. Not sure
+			# how well ssh takes Windows line endings.
+			Copy-Item "$PSScriptRoot/git-attributes.txt" "./.gitattributes"
+
+			& git add * .gitattributes
 			if (-Not $?) {
 				throw 'git add failed'
 			}
