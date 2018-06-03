@@ -18,7 +18,7 @@ Commands:
   datadir clone              Clones an existing ssh data dir with git
 
   keys create                Create SSH key pair (bcrypt encrypted)
-  keys install [<user>@]<ssh-server>
+  keys install [<user>@]<ssh-server>[:port]
                              Installs the public key on the specified server (requires password
                              authentication)
   keys check                 Checks the SSH key pair for problems (no password, weak encryption)

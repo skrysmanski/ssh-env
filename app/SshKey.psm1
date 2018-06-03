@@ -35,6 +35,20 @@ function Install-SshKey([String] $SshTarget) {
 	$sshPublicKeyPath = Get-SshPublicKeyPath
 	$publicKey = Get-Content $sshPublicKeyPath -Encoding 'utf8'
 
+	# Use ':' to separate port in this case.
+	if ($SshTarget.Contains(':')) {
+		$parts = $SshTarget.Split(':')
+		if ($parts.Length -ne 2) {
+			Write-Error "The target name '$SshTarget' is invalid."
+		}
+
+		$SshTarget = $parts[0]
+		$port = $parts[1]
+	}
+	else {
+		$port = 22
+	}
+
 	# Does basically the same thing as "ssh-copy-id". The problem with "ssh-copy-id" is that you can't
 	# specify the SSH config file and thus it won't work here.
 	#
@@ -44,7 +58,7 @@ function Install-SshKey([String] $SshTarget) {
 	# For some guidance on this command see:
 	# * http://askubuntu.com/a/6186/62255
 	# * https://github.com/openssh/openssh-portable/blob/master/contrib/ssh-copy-id
-	$publicKey | & ssh -F $sshConfigPath -o 'PreferredAuthentications keyboard-interactive,password' $SshTarget "exec sh -c 'cd ; umask 077 ; mkdir -p .ssh && cat >> .ssh/authorized_keys || exit 1'"
+	$publicKey | & ssh -F $sshConfigPath -o 'PreferredAuthentications keyboard-interactive,password' -p $port $SshTarget "exec sh -c 'cd ; umask 077 ; mkdir -p .ssh && cat >> .ssh/authorized_keys || exit 1'"
 }
 
 function Check-SshKeyEncryption {
