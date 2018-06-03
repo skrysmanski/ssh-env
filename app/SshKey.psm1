@@ -37,10 +37,13 @@ function Install-SshKey([String] $SshTarget) {
 	# Does basically the same thing as "ssh-copy-id". The problem with "ssh-copy-id" is that you can't
 	# specify the SSH config file and thus it won't work here.
 	#
+	# The 'PreferredAuthentications' option (see 'man ssh_config') makes sure the user isn't asked
+	# for the password to his/her SSH private key (which may be confusing to the user at this point).
+	#
 	# For some guidance on this command see:
 	# * http://askubuntu.com/a/6186/62255
 	# * https://github.com/openssh/openssh-portable/blob/master/contrib/ssh-copy-id
-	$publicKey | Invoke-Ssh $SshTarget "exec sh -c 'cd ; umask 077 ; mkdir -p .ssh && cat >> .ssh/authorized_keys || exit 1'"
+	$publicKey | Invoke-Ssh '-o' 'PreferredAuthentications keyboard-interactive,password' $SshTarget "exec sh -c 'cd ; umask 077 ; mkdir -p .ssh && cat >> .ssh/authorized_keys || exit 1'"
 }
 
 function Check-SshKeyEncryption {
