@@ -1,7 +1,6 @@
 # Stop on every error
 $script:ErrorActionPreference = 'Stop'
 
-Import-Module "$PSScriptRoot/Ssh.psm1" -DisableNameChecking
 Import-Module "$PSScriptRoot/Utils.psm1" -DisableNameChecking
 Import-Module "$PSScriptRoot/SshConfig.psm1" -DisableNameChecking
 
@@ -31,6 +30,8 @@ function New-SshKey {
 }
 
 function Install-SshKey([String] $SshTarget) {
+	$sshConfigPath = Ensure-SshConfigIsUpToDate
+
 	$sshPublicKeyPath = Get-SshPublicKeyPath
 	$publicKey = Get-Content $sshPublicKeyPath -Encoding 'utf8'
 
@@ -43,7 +44,7 @@ function Install-SshKey([String] $SshTarget) {
 	# For some guidance on this command see:
 	# * http://askubuntu.com/a/6186/62255
 	# * https://github.com/openssh/openssh-portable/blob/master/contrib/ssh-copy-id
-	$publicKey | Invoke-Ssh '-o' 'PreferredAuthentications keyboard-interactive,password' $SshTarget "exec sh -c 'cd ; umask 077 ; mkdir -p .ssh && cat >> .ssh/authorized_keys || exit 1'"
+	$publicKey | & ssh -F $sshConfigPath -o 'PreferredAuthentications keyboard-interactive,password' $SshTarget "exec sh -c 'cd ; umask 077 ; mkdir -p .ssh && cat >> .ssh/authorized_keys || exit 1'"
 }
 
 function Check-SshKeyEncryption {

@@ -7,7 +7,6 @@ Import-Module "$PSScriptRoot/SshEnvPaths.psm1" -DisableNameChecking
 Import-Module "$PSScriptRoot/SshAgent.psm1" -DisableNameChecking
 Import-Module "$PSScriptRoot/SshKey.psm1" -DisableNameChecking
 Import-Module "$PSScriptRoot/SshEnvAppAux.psm1" -DisableNameChecking
-Import-Module "$PSScriptRoot/Ssh.psm1" -DisableNameChecking
 Import-Module "$PSScriptRoot/Installation.psm1" -DisableNameChecking
 Import-Module "$PSScriptRoot/SshDataDir.psm1" -DisableNameChecking
 
@@ -17,9 +16,12 @@ if ($args.Length -eq 0) {
 }
 
 function Invoke-SshWithAgent {
+	$sshConfigPath = Ensure-SshConfigIsUpToDate
+
 	$privateKeyPath = Get-SshPrivateKeyPath
 	Ensure-SshAgentState -SshPrivateKeyPath $privateKeyPath
-	Invoke-Ssh @args
+
+	& ssh -F $sshConfigPath @args
 }
 
 function Execute-SshEnvApp {
