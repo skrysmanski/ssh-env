@@ -56,7 +56,22 @@ function Clear-SshAgentEnv() {
 	$env:SSH_AGENT_ENV_LOADED = $null
 }
 
-function Get-SshAgentPid {
+function Get-SshAgentPid([bool] $checkProcess = $true) {
 	Import-SshAgentEnv
-	return $env:SSH_AGENT_PID
+
+	$agentPid = $env:SSH_AGENT_PID
+	if (-Not $checkProcess) {
+		return $agentPid
+	}
+
+	if ($agentPid) {
+		$agentProcess = Get-Process -Id $agentPid -ErrorAction SilentlyContinue
+		if ($agentProcess -and $agentProcess.ProcessName -eq 'ssh-agent') {
+			return $agentPid
+		}
+	}
+
+	# Error case: The reported PID is wrong.
+	Clear-SshAgentEnv
+	return $null
 }

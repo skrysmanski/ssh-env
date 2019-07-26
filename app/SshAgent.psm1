@@ -70,10 +70,14 @@ function Write-SshAgentStatus {
 # Starts a new ssh-agent instance and stores its env variables on disk.
 #
 function Start-SshAgent {
+	$sshAgentCommand = Get-Command 'ssh-agent'
+
+	Write-Host -ForegroundColor Gray "Starting new ssh-agent instance from: $($sshAgentCommand.Source)"
+
 	# Starts the new agent instance and prints its env variables on stdout
 	# -c creates the output in "C-shell commands" which is easier to parse
 	# than "Bourne shell commands" (which would be -s and the default most of the time).
-	$agentEnv = & ssh-agent -c
+	$agentEnv = & $sshAgentCommand.Source -c
 
 	if (-Not $?) {
 		throw "'ssh-agent -c' failed."
@@ -86,6 +90,15 @@ function Start-SshAgent {
 	Save-SshAgentEnv $agentEnv
 
 	Import-SshAgentEnv -Force $true
+
+	$effectiveAgentPid = Get-SshAgentPid
+	if ($effectiveAgentPid) {
+		Write-Host -ForegroundColor Gray "ssh-agent now running under PID $effectiveAgentPid"
+	}
+	else {
+		$agentPid = Get-SshAgentPid -CheckProcess $false
+		Write-Error "ssh-agent was reported to run under PID $agentPid but we can't find it there."
+	}
 }
 
 function Stop-SshAgent {
