@@ -72,7 +72,7 @@ function Write-SshAgentStatus {
 function Start-SshAgent {
 	$sshAgentCommand = Get-Command 'ssh-agent'
 
-	Write-Host -ForegroundColor Gray "Starting new ssh-agent instance from: $($sshAgentCommand.Source)"
+	Write-Host -ForegroundColor DarkGray "Starting new ssh-agent instance from: $($sshAgentCommand.Source)"
 
 	# Starts the new agent instance and prints its env variables on stdout
 	# -c creates the output in "C-shell commands" which is easier to parse
@@ -93,7 +93,7 @@ function Start-SshAgent {
 
 	$effectiveAgentPid = Get-SshAgentPid
 	if ($effectiveAgentPid) {
-		Write-Host -ForegroundColor Gray "ssh-agent now running under PID $effectiveAgentPid"
+		Write-Host -ForegroundColor DarkGray "ssh-agent now running under PID $effectiveAgentPid"
 	}
 	else {
 		$agentPid = Get-SshAgentPid -CheckProcess $false

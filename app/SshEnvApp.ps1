@@ -21,7 +21,10 @@ function Invoke-SshWithAgent {
 	$privateKeyPath = Get-SshPrivateKeyPath
 	Ensure-SshAgentState -SshPrivateKeyPath $privateKeyPath
 
-	& ssh -F $sshConfigPath @args
+	$sshCommand = Get-Command 'ssh'
+	Write-Host -ForegroundColor DarkGray "Using ssh from: $($sshCommand.Source)"
+
+	& $sshCommand.Source -F $sshConfigPath @args
 }
 
 function Execute-SshEnvApp {
