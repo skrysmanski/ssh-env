@@ -117,8 +117,7 @@ function Get-SshAgentPid([bool] $checkProcess = $true) {
 	}
 
 	if ($agentPid) {
-		$agentProcess = Get-Process -Id $agentPid -ErrorAction SilentlyContinue
-		if ($agentProcess -and $agentProcess.ProcessName -eq 'ssh-agent') {
+		if (Test-SshAgentPid $agentPid) {
 			return $agentPid
 		}
 	}
@@ -126,4 +125,14 @@ function Get-SshAgentPid([bool] $checkProcess = $true) {
 	# Error case: The reported PID is wrong.
 	Clear-SshAgentEnv
 	return $null
+}
+
+function Test-SshAgentPid($agentPid) {
+	$agentProcess = Get-Process -Id $agentPid -ErrorAction SilentlyContinue
+
+	if ($agentProcess -and $agentProcess.ProcessName -eq 'ssh-agent') {
+		return $true
+	}
+
+	return $false
 }

@@ -81,6 +81,11 @@ function Start-SshAgent {
 	# Starts the new agent instance and prints its env variables on stdout
 	# -c creates the output in "C-shell commands" which is easier to parse
 	# than "Bourne shell commands" (which would be -s and the default most of the time).
+	#
+	# NOTE: The process being started here will actually start a second ssh-agent process
+	#   in the background - and then exit after it has written the info about the second
+	#   process to stdout. Thus, we can't use the PID of this command to find the
+	#   background process.
 	$agentEnvAsString = & $sshAgentCommand.Source -c
 
 	if (-Not $?) {
@@ -94,6 +99,25 @@ function Start-SshAgent {
 	$agentEnv = Parse-NativeSshAgentEnvText $agentEnvAsString
 	if (-Not $agentEnv) {
 		Write-Error "The process 'ssh-agent' could be started but it didn't provide all the necessary information."
+	}
+
+	if (Test-IsWindows -And -Not (Test-SshAgentPid $agentEnv.SshAgentPid)) {
+		# Workaround for ssh on Windows that's compiled against Cygwin which then uses different
+		# PIDs for the "Linux" and the "Windows" part.
+		# See: https://github.com/git-for-windows/git/issues/2274
+		try {
+			$winPidAsString = & cat.exe "/proc/$($agentEnv.SshAgentPid)/winpid" 2>&1
+		}
+		catch {
+			$winPidAsString = $null
+		}
+
+		if (![string]::IsNullOrWhiteSpace($winPidAsString)) {
+			$winPid = 0
+			if ([int]::TryParse($winPidAsString, [ref]$winPid)) {
+				$agentEnv.SshAgentPid = $winPid
+			}
+		}
 	}
 
 	Save-SshAgentEnv $agentEnv
