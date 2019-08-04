@@ -45,12 +45,16 @@ function Write-SshAgentStatus {
 	Write-Host -NoNewline 'ssh-agent: '
 	switch ($agentStatus) {
 		RunningWithKey {
-			Write-Host -ForegroundColor Green 'running (keys loaded)'
+			Write-Host -NoNewline -ForegroundColor Green 'running (keys loaded)'
+			$sshAgentPid = Get-SshAgentPid
+			Write-Host -ForegroundColor DarkGray " [PID: $sshAgentPid]"
 			break
 		}
 
 		RunningWithoutKey {
-			Write-Host -ForegroundColor Green 'running (no keys loaded)'
+			Write-Host -NoNewline -ForegroundColor Green 'running (no keys loaded)'
+			$sshAgentPid = Get-SshAgentPid
+			Write-Host -ForegroundColor DarkGray " [PID: $sshAgentPid]"
 			break
 		}
 
