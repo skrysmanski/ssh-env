@@ -3,9 +3,14 @@ $script:ErrorActionPreference = 'Stop'
 
 Import-Module "$PSScriptRoot/SshEnvPaths.psm1" -DisableNameChecking
 
-function Get-SshAgentEnvFilePath {
+function Get-SshAgentEnvFilePath([bool] $OldFile = $false) {
 	$localDataPath = Get-SshLocalDataPath
-	return Join-Path $localDataPath 'ssh-agent.env'
+	if (-Not $OldFile) {
+		return Join-Path $localDataPath 'ssh-agent-env.json'
+	}
+	else {
+		return Join-Path $localDataPath 'ssh-agent.env'
+	}
 }
 
 #
@@ -20,34 +25,81 @@ function Import-SshAgentEnv([bool] $Force = $false) {
 
 	$envFilePath = Get-SshAgentEnvFilePath
 	if (-Not (Test-Path $envFilePath -PathType Leaf)) {
-		return
-	}
+		# Try old file...
+		$oldEnvFilePath = Get-SshAgentEnvFilePath -OldFile $true
+		if (-Not (Test-Path $oldEnvFilePath -PathType Leaf)) {
+			return
+		}
 
-	$envFileContents = Get-Content $envFilePath -Encoding 'utf8'
-	foreach ($envLine in $envFileContents) {
-		if ($envLine -match '^\s*setenv\s+([^\s]+)\s+([^;]+)\s*;\s*$') {
-			if ($Matches[1] -eq 'SSH_AUTH_SOCK') {
-				# This is required by ssh to detect the ssh-agent
-				# NOTE: The name of this variable is predefined and must NOT BE CHANGED
-				$env:SSH_AUTH_SOCK = $Matches[2]
-			}
-			elseif ($Matches[1] -eq 'SSH_AGENT_PID') {
-				# NOTE: The name of this variable is predefined and must NOT BE CHANGED
-				$env:SSH_AGENT_PID = $Matches[2]
-			}
+		$envFileContents = Get-Content $oldEnvFilePath -Encoding 'utf8'
+		$agentEnv = Parse-NativeSshAgentEnvText $envFileContents
+		if (-Not $agentEnv) {
+			# File is incomplete or otherwise damaged.
+			return
+		}
+
+		# Save info into new structure and remove old file
+		Save-SshAgentEnv $agentEnv
+		Remove-Item $oldEnvFilePath | Out-Null
+	}
+	else {
+		$envFileContents = Get-Content $envFilePath -Encoding 'utf8' -Raw
+
+		if ([string]::IsNullOrWhiteSpace($envFileContents)) {
+			return
+		}
+
+		try {
+			$agentEnv = ConvertFrom-Json $envFileContents
+		}
+		catch {
+			# Invalid JSON file.
+			return
 		}
 	}
+
+	# NOTE: The names of the following two env variables are predefined and must NOT BE CHANGED!
+	$env:SSH_AUTH_SOCK = $agentEnv.SshAuthSock
+	$env:SSH_AGENT_PID = $agentEnv.SshAgentPid
 
 	if ($env:SSH_AUTH_SOCK -and $env:SSH_AGENT_PID) {
 		$env:SSH_AGENT_ENV_LOADED = '1'
 	}
 }
 
-function Save-SshAgentEnv($AgentEnv) {
+function Parse-NativeSshAgentEnvText($NativeAgentEnv) {
+	foreach ($envLine in $NativeAgentEnv) {
+		if ($envLine -match '^\s*setenv\s+([^\s]+)\s+([^;]+)\s*;\s*$') {
+			if ($Matches[1] -eq 'SSH_AUTH_SOCK') {
+				# This is required by ssh to detect the ssh-agent
+				$sshAuthSock = $Matches[2]
+			}
+			elseif ($Matches[1] -eq 'SSH_AGENT_PID') {
+				$sshAgentPid = 0
+				if (![int]::TryParse($Matches[2], [ref]$sshAgentPid)) {
+					$sshAgentPid = $null
+				}
+			}
+		}
+	}
+
+	if ($sshAuthSock -and $sshAgentPid) {
+		# All necessary information could be found
+		return @{
+			SshAuthSock = $sshAuthSock
+			SshAgentPid = $sshAgentPid
+		}
+	}
+	else {
+		return $null
+	}
+}
+
+function Save-SshAgentEnv($AgentEnvAsObject) {
 	$envFilePath = Get-SshAgentEnvFilePath
 
-	# TODO: We could convert the output to JSON here to decouple the whole process a little bit more from a shell
-	Write-FileSafe -FileName $envFilePath -Contents $AgentEnv
+	$agentEnvAsString = ConvertTo-Json $AgentEnvAsObject
+	Write-FileSafe -FileName $envFilePath -Contents $agentEnvAsString
 }
 
 function Clear-SshAgentEnv() {

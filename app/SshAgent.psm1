@@ -77,14 +77,19 @@ function Start-SshAgent {
 	# Starts the new agent instance and prints its env variables on stdout
 	# -c creates the output in "C-shell commands" which is easier to parse
 	# than "Bourne shell commands" (which would be -s and the default most of the time).
-	$agentEnv = & $sshAgentCommand.Source -c
+	$agentEnvAsString = & $sshAgentCommand.Source -c
 
 	if (-Not $?) {
 		throw "'ssh-agent -c' failed."
 	}
 
-	if (-Not $agentEnv) {
+	if (-Not $agentEnvAsString) {
 		throw "'ssh-agent -c' didn't return any configuration"
+	}
+
+	$agentEnv = Parse-NativeSshAgentEnvText $agentEnvAsString
+	if (-Not $agentEnv) {
+		Write-Error "The process 'ssh-agent' could be started but it didn't provide all the necessary information."
 	}
 
 	Save-SshAgentEnv $agentEnv
