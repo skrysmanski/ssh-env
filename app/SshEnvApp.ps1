@@ -174,11 +174,11 @@ catch {
 	# NOTE: According to https://docs.microsoft.com/en-us/powershell/scripting/developer/cmdlet/windows-powershell-error-records
 	#   we should always use '$_.ErrorDetails.Message' instead of '$_.Exception.Message' for displaying the message.
 	#   In fact, there are cases where '$_.ErrorDetails.Message' actually contains more/better information than '$_.Exception.Message'.
-	if ($ErrorRecord.ErrorDetails -And $ErrorRecord.ErrorDetails.Message) {
-		$unhandledExceptionMessage = $ErrorRecord.ErrorDetails.Message
+	if ($_.ErrorDetails -And $_.ErrorDetails.Message) {
+		$unhandledExceptionMessage = $_.ErrorDetails.Message
 	}
-	elseif ($ErrorRecord.Exception -And $ErrorRecord.Exception.Message) {
-		$unhandledExceptionMessage = $ErrorRecord.Exception.Message
+	elseif ($_.Exception -And $_.Exception.Message) {
+		$unhandledExceptionMessage = $_.Exception.Message
 	}
 	else {
 		$unhandledExceptionMessage = 'Could not determine error message from ErrorRecord'
