@@ -55,7 +55,7 @@ function Test-IsFolderEncrypted([string] $FolderPath) {
 	return $null
 }
 
-function Prompt-Choice($Prompt, [string[]] $Choices, [string] $DefaultValue = $null) {
+function Read-ChoicePrompt($Prompt, [string[]] $Choices, [string] $DefaultValue = $null) {
 	if ((-Not $Choices) -or ($Choices.Length -eq 0)) {
 		throw "No choices specified."
 	}
@@ -72,7 +72,7 @@ function Prompt-Choice($Prompt, [string[]] $Choices, [string] $DefaultValue = $n
 	}
 }
 
-function Prompt-YesNo($Prompt, $DefaultValue = $null) {
+function Read-YesNoPrompt($Prompt, $DefaultValue = $null) {
 	if ($DefaultValue -eq $true) {
 		$choiceText = '(Y/n)'
 		$DefaultValue = 'y'
@@ -86,11 +86,11 @@ function Prompt-YesNo($Prompt, $DefaultValue = $null) {
 		$DefaultValue = $null
 	}
 
-	$response = Prompt-Choice "$Prompt $choiceText" -Choices @('y', 'n') -DefaultValue $DefaultValue
+	$response = Read-ChoicePrompt "$Prompt $choiceText" -Choices @('y', 'n') -DefaultValue $DefaultValue
 	return $response -eq 'y'
 }
 
-function Prompt-Integer($Prompt, [int] $DefaultValue = $null) {
+function Read-IntegerPrompt($Prompt, [int] $DefaultValue = $null) {
 	if ($DefaultValue -ne $null) {
 		$Prompt += " [$DefaultValue]"
 	}
@@ -108,7 +108,7 @@ function Prompt-Integer($Prompt, [int] $DefaultValue = $null) {
 	}
 }
 
-function Prompt-Text($Prompt, [bool] $AllowEmpty = $false, [string] $DefaultValue = $null) {
+function Read-TextPrompt($Prompt, [bool] $AllowEmpty = $false, [string] $DefaultValue = $null) {
 	if ($DefaultValue) {
 		$Prompt += " [$DefaultValue]"
 	}

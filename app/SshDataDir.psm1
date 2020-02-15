@@ -53,7 +53,7 @@ function Initialize-DataDirViaGitClone {
 function Initialize-DataDirFromScratch {
 	Assert-SshDataDirDoesntExist
 
-	$hasSshKey = Prompt-YesNo 'Do you have an SSH key pair (in case of doubt: no)?'
+	$hasSshKey = Read-YesNoPrompt 'Do you have an SSH key pair (in case of doubt: no)?'
 	if (-Not $hasSshKey) {
 		Write-Host
 		New-SshKey
@@ -68,7 +68,7 @@ function Initialize-DataDirFromScratch {
 	# Create empty known_hosts file so that it can be added to Git (or whatever vcs the user wants to use).
 	New-Item "$sshDataPath/known_hosts" -ItemType File | Out-Null
 
-	$createGitRepo = Prompt-YesNo 'Do you want to version the SSH data with Git?' -DefaultValue $true
+	$createGitRepo = Read-YesNoPrompt 'Do you want to version the SSH data with Git?' -DefaultValue $true
 	if ($createGitRepo) {
 		try {
 			Push-Location $sshDataPath
@@ -116,7 +116,7 @@ function Initialize-DataDirFromScratch {
 # Makes the data dir available directly to "ssh" (i.e. without using ssh-env).
 function Install-DataDirGlobally() {
 	$globalConfigPath = Get-GlobalSshConfigPath -CreateDirIfNotExists $false
-	$response = Prompt-YesNo "This will overwrite the file '$globalConfigPath' with an auto-generated one. Do you want to continue?"
+	$response = Read-YesNoPrompt "This will overwrite the file '$globalConfigPath' with an auto-generated one. Do you want to continue?"
 	if (-Not $response) {
 		return
 	}
@@ -134,7 +134,7 @@ function Uninstall-DataDirGlobally() {
 	$globalConfigPath = Get-GlobalSshConfigPath -CreateDirIfNotExists $false
 
 	if (Test-Path $globalConfigPath -PathType Leaf) {
-		$response = Prompt-YesNo "The auto-generated file '$globalConfigPath' can be deleted. Do you want to delete it?"
+		$response = Read-YesNoPrompt "The auto-generated file '$globalConfigPath' can be deleted. Do you want to delete it?"
 		if ($response) {
 			Remove-Item $globalConfigPath
 		}

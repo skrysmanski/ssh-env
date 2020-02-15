@@ -12,12 +12,12 @@ function Get-SshAgentConfigFilePath {
 function Initialize-SshAgentConfig {
 	$DEFAULT_KEY_TTL = 10
 
-	$useSshAgent = Prompt-YesNo 'Do you want to use ssh-agent?' -DefaultValue $true
+	$useSshAgent = Read-YesNoPrompt 'Do you want to use ssh-agent?' -DefaultValue $true
 
 	if ($useSshAgent -eq 'y') {
 		$useSshAgent = $true
 
-		$keyTimeToLive = Prompt-Integer "How long should the private key be kept in memory (seconds; 0 = forever)" -DefaultValue $DEFAULT_KEY_TTL
+		$keyTimeToLive = Read-IntegerPrompt "How long should the private key be kept in memory (seconds; 0 = forever)" -DefaultValue $DEFAULT_KEY_TTL
 	}
 	else {
 		$useSshAgent = $false

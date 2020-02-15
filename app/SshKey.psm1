@@ -10,7 +10,7 @@ function New-SshKey {
 	# "install-key". There it is then used to make it easier to differentiate
 	# the various authorized keys (as stored in "~/.ssh/authorized_keys").
 	$userName = [Environment]::UserName
-	$certName = Prompt-Text "Who does this certificate belong to?" -DefaultValue $userName
+	$certName = Read-TextPrompt "Who does this certificate belong to?" -DefaultValue $userName
 
 	$sshPrivateKeyPath = Get-SshPrivateKeyPath -CreateDirIfNotExists $true
 
