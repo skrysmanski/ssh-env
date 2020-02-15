@@ -4,6 +4,7 @@ $script:ErrorActionPreference = 'Stop'
 & $PSScriptRoot/Unload-Modules.ps1
 
 Import-Module "$PSScriptRoot/SshEnvPaths.psm1" -DisableNameChecking
+Import-Module "$PSScriptRoot/SshEnvConf.psm1" -DisableNameChecking
 Import-Module "$PSScriptRoot/SshAgent.psm1" -DisableNameChecking
 Import-Module "$PSScriptRoot/SshKey.psm1" -DisableNameChecking
 Import-Module "$PSScriptRoot/SshEnvAppAux.psm1" -DisableNameChecking
@@ -80,6 +81,32 @@ function Execute-SshEnvApp {
 
 				'init' {
 					New-DataDir
+					break
+				}
+
+				'status' {
+					$dataDirExists = Test-SshDataDirExists
+					Write-Host -NoNewline 'DataDir exists:                '
+
+					if (-Not $dataDirExists) {
+						Write-Host -ForegroundColor Red 'no'
+						break
+					}
+
+					Write-Host -ForegroundColor Green 'yes'
+
+					$sshEnvConfig = Get-SshEnvConfig
+					Write-Host -NoNewline 'Is DataDir globally installed: '
+					if ($sshEnvConfig.GloballyInstalled) {
+						Write-Host -ForegroundColor Cyan 'yes'
+					}
+					else {
+						Write-Host -ForegroundColor Cyan 'no'
+					}
+
+					$sshRuntimeConfigPath = Get-SshConfigPath -RuntimeConfig $true
+					Write-Host -ForegroundColor DarkGray " -> Runtime SSH config path:   $sshRuntimeConfigPath"
+
 					break
 				}
 

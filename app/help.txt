@@ -16,6 +16,7 @@ Commands:
 
   datadir init               Creates a fresh ssh data dir (containing the ssh key pair and ssh config)
   datadir clone              Clones an existing ssh data dir with git
+  datadir status             Prints various information about the datadir
   datadir global-install     Makes the data dir available to all ssh processes for the current user
                              (by overwriting ~/.ssh/config)
   datadir global-uninstall   ssh-env no longer manages ~/.ssh/config

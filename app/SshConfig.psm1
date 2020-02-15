@@ -19,7 +19,7 @@ function Get-GlobalSshConfigPath([bool] $CreateDirIfNotExists) {
 
 function Get-SshConfigPath([bool] $RuntimeConfig = $true, [bool] $CreateDirIfNotExists = $false) {
 	if ($runtimeConfig) {
-		$localDataPath = Get-SshLocalDataPath
+		$localDataPath = Get-SshLocalDataPath -CreateIfNotExists $CreateDirIfNotExists
 		$localRuntimeConfigPath = Join-Path $localDataPath 'ssh.generated.conf'
 
 		$sshEnvConf = Get-SshEnvConfig
@@ -33,7 +33,7 @@ function Get-SshConfigPath([bool] $RuntimeConfig = $true, [bool] $CreateDirIfNot
 			# NOTE: If globally installed, we switch over to the "global" config file. Unfortunaly,
 			#   we can't use a symlink for this because creating symlinks on Windows requires admin
 			#   rights. -.-
-			return Get-GlobalSshConfigPath -CreateDirIfNotExists $true
+			return Get-GlobalSshConfigPath -CreateDirIfNotExists $CreateDirIfNotExists
 		}
 		else {
 			return $localRuntimeConfigPath
