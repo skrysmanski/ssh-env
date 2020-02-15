@@ -33,7 +33,7 @@ function Invoke-SshEnvApp {
 	Assert-SoftwareInstallation
 
 	Assert-FolderIsEncrypted
-	Ensure-CorrectSshKeyPermissions
+	Assert-CorrectSshKeyPermissions
 
 	switch -Regex ($args[0]) {
 		'agent' {
@@ -151,7 +151,7 @@ function Invoke-SshEnvApp {
 				}
 
 				'check' {
-					Check-SshKeyEncryption
+					Write-SshKeyEncryptionStateToHost
 					break
 				}
 

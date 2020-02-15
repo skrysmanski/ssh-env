@@ -42,7 +42,7 @@ function Initialize-DataDirViaGitClone {
 		Write-Error "Cloning '$gitUrl' failed"
 	}
 
-	Ensure-CorrectSshKeyPermissions
+	Assert-CorrectSshKeyPermissions
 
 	Write-Host
 	Write-Host -NoNewline 'Cloning SSH data repository: '

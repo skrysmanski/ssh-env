@@ -26,7 +26,7 @@ function New-SshKey {
 		Write-Error 'ssh-keygen failed'
 	}
 
-	Ensure-CorrectSshKeyPermissions
+	Assert-CorrectSshKeyPermissions
 }
 
 function Install-SshKey([String] $SshTarget) {
@@ -61,7 +61,7 @@ function Install-SshKey([String] $SshTarget) {
 	$publicKey | & ssh -F $sshConfigPath -o 'PreferredAuthentications keyboard-interactive,password' -p $port $SshTarget "exec sh -c 'cd ; umask 077 ; mkdir -p .ssh && cat >> .ssh/authorized_keys || exit 1'"
 }
 
-function Check-SshKeyEncryption {
+function Write-SshKeyEncryptionStateToHost {
 	$sshPrivateKeyPath = Get-SshPrivateKeyPath
 
 	if (-Not (Test-Path $sshPrivateKeyPath)) {
@@ -93,7 +93,7 @@ function Check-SshKeyEncryption {
 	}
 }
 
-function Ensure-CorrectSshKeyPermissions {
+function Assert-CorrectSshKeyPermissions {
 	if (Test-IsPosix) {
 		$sshPrivateKeyPath = Get-SshPrivateKeyPath
 		if (Test-Path $sshPrivateKeyPath) {
