@@ -57,5 +57,5 @@ function Get-SshAgentConfig([switch] $CreateIfNotExists) {
 		}
 	}
 
-	return Get-Content $configFilePath -Encoding 'utf8' | ConvertFrom-Json
+	return Get-Content $configFilePath -Encoding 'utf8' -Raw | ConvertFrom-Json
 }
