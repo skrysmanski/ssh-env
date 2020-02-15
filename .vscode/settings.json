@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "config": "ssh_config",
+        "ssh.generated.conf": "ssh_config"
+    }
+}
