@@ -44,7 +44,7 @@ function Execute-SshEnvApp {
 				}
 
 				'config' {
-					Configure-SshAgent
+					Initialize-SshAgentConfig
 					break
 				}
 

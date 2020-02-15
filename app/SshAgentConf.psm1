@@ -9,7 +9,7 @@ function Get-SshAgentConfigFilePath {
 	return Join-Path $localDataPath 'ssh-agent.settings.json'
 }
 
-function Configure-SshAgent {
+function Initialize-SshAgentConfig {
 	$DEFAULT_KEY_TTL = 10
 
 	$useSshAgent = Prompt-YesNo 'Do you want to use ssh-agent?' -DefaultValue $true
@@ -50,7 +50,7 @@ function Get-SshAgentConfig([switch] $CreateIfNotExists) {
 			Write-Host -ForegroundColor Green -NoNewline $configFilePath
 			Write-Host " doesn't exist. Creating it."
 			Write-Host
-			Configure-SshAgent
+			Initialize-SshAgentConfig
 		}
 		else {
 			return $null
