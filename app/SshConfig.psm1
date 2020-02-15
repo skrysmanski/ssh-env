@@ -93,6 +93,7 @@ function Get-RuntimeSshConfig {
 	$sshEnvPath = Get-SshEnvPath -CreateIfNotExists $false
 	$sshDataPath = Get-SshDataPath
 	$privateKeyPath = Get-SshPrivateKeyPath
+	$knownHostsPath = [IO.Path]::Combine($sshDataPath, 'known_hosts')
 
 	return @"
 # NOTE: This file is AUTO-GENERATED. Do NOT edit manually.
@@ -106,7 +107,7 @@ function Get-RuntimeSshConfig {
 # IMPORTANT: The next two options are specified here (rather than via the commandline)
 #   to make multi-hop SSH hosts (i.e. ProxyCommand) easier.
 # Location of the "known_hosts" file.
-UserKnownHostsFile $sshDataPath/known_hosts
+UserKnownHostsFile $knownHostsPath
 
 # Location of the private key file.
 IdentityFile $privateKeyPath
