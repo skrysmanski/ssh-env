@@ -6,7 +6,7 @@ Import-Module "$PSScriptRoot/Utils.psm1" -DisableNameChecking
 
 function Get-SshAgentConfigFilePath {
 	$localDataPath = Get-SshLocalDataPath
-	return Join-Path $localDataPath 'ssh-agent.config'
+	return Join-Path $localDataPath 'ssh-agent-config.json'
 }
 
 function Configure-SshAgent {
