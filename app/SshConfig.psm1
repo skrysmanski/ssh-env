@@ -73,7 +73,7 @@ function Get-RuntimeSshConfig {
 		$sshConfig = ''
 	}
 
-	$sshAgentConf = Get-SshAgentConfig
+	$sshAgentConf = Get-SshAgentConfig -CreateIfNotExists
 	if ($sshAgentConf -and $sshAgentConf.useSshAgent) {
 		$sshAgentStatus = Get-SshAgentStatus
 
