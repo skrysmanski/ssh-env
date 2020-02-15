@@ -8,13 +8,13 @@ Import-Module "$PSScriptRoot/SshAgent.psm1"
 Import-Module "$PSScriptRoot/SshAgentEnv.psm1"
 
 function Get-GlobalSshConfigPath([bool] $CreateDirIfNotExists) {
-	$baseDir = "$HOME/.ssh"
+	$baseDir = [IO.Path]::Combine($HOME, '.ssh')
 
 	if ($CreateDirIfNotExists -and (-Not (Test-Path $baseDir -PathType Container))) {
 		New-Item $baseDir -ItemType Directory | Out-Null
 	}
 
-	return "$baseDir/config"
+	return [IO.Path]::Combine($baseDir, 'config')
 }
 
 function Get-SshConfigPath([bool] $RuntimeConfig = $true, [bool] $CreateDirIfNotExists = $false) {
