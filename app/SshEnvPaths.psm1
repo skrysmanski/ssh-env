@@ -4,6 +4,10 @@ $script:ErrorActionPreference = 'Stop'
 $script:SshEnvBasePath = Resolve-Path "$PSScriptRoot/.."
 
 function Get-SshEnvPath([string] $RelativePath, [bool] $CreateIfNotExists) {
+	if (-Not $RelativePath) {
+		return $script:SshEnvBasePath
+	}
+
 	$Path = Join-Path $script:SshEnvBasePath $RelativePath
 
 	if ($CreateIfNotExists -And (-Not (Test-Path $Path -PathType Container))) {

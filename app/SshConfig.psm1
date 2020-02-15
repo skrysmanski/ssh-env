@@ -90,11 +90,14 @@ function Create-RuntimeSshConfig {
 		$sshAgentSockFilePath = 'none'
 	}
 
+	$sshEnvPath = Get-SshEnvPath -CreateIfNotExists $false
 	$sshDataPath = Get-SshDataPath
 	$privateKeyPath = Get-SshPrivateKeyPath
 
 	return @"
 # NOTE: This file is AUTO-GENERATED. Do NOT edit manually.
+
+# Using ssh-env from: $sshEnvPath
 
 # ssh (secure shell) configuration file
 # See: https://man.openbsd.org/ssh_config
