@@ -169,7 +169,7 @@ function Add-SshKeyToRunningAgent([String] $SshPrivateKeyPath, [int] $KeyTimeToL
 	}
 }
 
-function Ensure-SshAgentState([String] $SshPrivateKeyPath) {
+function Assert-SshAgentState([String] $SshPrivateKeyPath) {
 	if (-Not (Test-Path $SshPrivateKeyPath)) {
 		Write-Error "Private SSH key doesn't exist at: $SshPrivateKeyPath`nDid you run: ./ssh-env datadir init/clone ?"
 	}

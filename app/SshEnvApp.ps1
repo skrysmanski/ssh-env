@@ -20,7 +20,7 @@ function Invoke-SshWithAgent {
 	$sshConfigPath = Ensure-SshConfigIsUpToDate
 
 	$privateKeyPath = Get-SshPrivateKeyPath
-	Ensure-SshAgentState -SshPrivateKeyPath $privateKeyPath
+	Assert-SshAgentState -SshPrivateKeyPath $privateKeyPath
 
 	$sshCommand = Get-Command 'ssh'
 	Write-Host -ForegroundColor DarkGray "Using ssh from: $($sshCommand.Source)"
@@ -163,7 +163,7 @@ function Execute-SshEnvApp {
 						Ensure-SshConfigIsUpToDate | Out-Null
 
 						$privateKeyPath = Get-SshPrivateKeyPath
-						Ensure-SshAgentState -SshPrivateKeyPath $privateKeyPath
+						Assert-SshAgentState -SshPrivateKeyPath $privateKeyPath
 					}
 					else {
 						Write-Error 'Use of ssh-agent is disabled by configuration.'
