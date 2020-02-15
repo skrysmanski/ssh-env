@@ -141,6 +141,8 @@ function Assert-SshConfigIsUpToDate {
 		}
 	}
 
-	Write-FileUtf8NoBom -FilePath $runtimeSshConfigPath -Contents $runtimeSshConfig
+	# NOTE: Since this file contains the path to the ssh-agent auth sock, it needs
+	#   better protection.
+	Write-FileSafe -FilePath $runtimeSshConfigPath -Contents $runtimeSshConfig
 	return $runtimeSshConfigPath
 }
