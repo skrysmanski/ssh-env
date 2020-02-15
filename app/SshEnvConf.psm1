@@ -19,3 +19,14 @@ function Get-SshEnvConfig() {
 
 	return Get-Content $configFilePath -Encoding 'utf8' -Raw | ConvertFrom-Json
 }
+
+function Set-SshEnvConfig([bool] $GloballyInstalled) {
+	$configFilePath = Get-SshEnvConfigFilePath
+
+	$config = @{
+		GloballyInstalled = $GloballyInstalled
+	}
+
+	$configAsString = ConvertTo-Json $config
+	Write-FileUtf8NoBom -Path $configFilePath -Contents $configAsString
+}

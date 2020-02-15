@@ -112,3 +112,31 @@ function New-DataDir {
 		Write-Host " *  Public key:  $sshPublicKeyPath"
 	}
 }
+
+# Makes the data dir available directly to "ssh" (i.e. without using ssh-env).
+function Install-DataDirGlobally() {
+	$globalConfigPath = Get-GlobalSshConfigPath -CreateDirIfNotExists $false
+	$response = Prompt-YesNo "This will overwrite the file '$globalConfigPath' with an auto-generated one. Do you want to continue?"
+	if (-Not $response) {
+		return
+	}
+
+	Set-SshEnvConfig -GloballyInstalled $true
+
+	Ensure-SshConfigIsUpToDate | Out-Null
+}
+
+function Uninstall-DataDirGlobally() {
+	Set-SshEnvConfig -GloballyInstalled $false
+
+	Ensure-SshConfigIsUpToDate | Out-Null
+
+	$globalConfigPath = Get-GlobalSshConfigPath -CreateDirIfNotExists $false
+
+	if (Test-Path $globalConfigPath -PathType Leaf) {
+		$response = Prompt-YesNo "The auto-generated file '$globalConfigPath' can be deleted. Do you want to delete it?"
+		if ($response) {
+			Remove-Item $globalConfigPath
+		}
+	}
+}

@@ -7,7 +7,7 @@ Import-Module "$PSScriptRoot/SshAgentConf.psm1" -DisableNameChecking
 Import-Module "$PSScriptRoot/SshAgent.psm1" -DisableNameChecking
 Import-Module "$PSScriptRoot/SshAgentEnv.psm1" -DisableNameChecking
 
-function Get-GlobalSshConfigPath([switch] $CreateDirIfNotExists) {
+function Get-GlobalSshConfigPath([bool] $CreateDirIfNotExists) {
 	$baseDir = "$HOME/.ssh"
 
 	if ($CreateDirIfNotExists -and (-Not (Test-Path $baseDir -PathType Container))) {
@@ -33,7 +33,7 @@ function Get-SshConfigPath([bool] $RuntimeConfig = $true, [bool] $CreateDirIfNot
 			# NOTE: If globally installed, we switch over to the "global" config file. Unfortunaly,
 			#   we can't use a symlink for this because creating symlinks on Windows requires admin
 			#   rights. -.-
-			return Get-GlobalSshConfigPath -CreateDirIfNotExists
+			return Get-GlobalSshConfigPath -CreateDirIfNotExists $true
 		}
 		else {
 			return $localRuntimeConfigPath

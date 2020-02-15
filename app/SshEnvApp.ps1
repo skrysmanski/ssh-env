@@ -83,6 +83,16 @@ function Execute-SshEnvApp {
 					break
 				}
 
+				'global-install' {
+					Install-DataDirGlobally
+					break
+				}
+
+				'global-uninstall' {
+					Uninstall-DataDirGlobally
+					break
+				}
+
 				'' {
 					Write-HelpAndExit "Missing 'datadir' command"
 					break

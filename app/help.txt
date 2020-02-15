@@ -1,8 +1,8 @@
 Usage:
   ssh-env [ssh] [<user>@]<ssh-server>
   ssh-env agent (status|stop|config)
-  ssh-env datadir (init|clone)
-  ssh-env keys (create|install|check)
+  ssh-env datadir (init|clone|global-install|global-uninstall)
+  ssh-env keys (create|install|check|load)
   ssh-env (help|--help|-h)
   ssh-env (version|--version|-v)
 
@@ -16,6 +16,9 @@ Commands:
 
   datadir init               Creates a fresh ssh data dir (containing the ssh key pair and ssh config)
   datadir clone              Clones an existing ssh data dir with git
+  datadir global-install     Makes the data dir available to all ssh processes for the current user
+                             (by overwriting ~/.ssh/config)
+  datadir global-uninstall   ssh-env no longer manages ~/.ssh/config
 
   keys create                Create SSH key pair (bcrypt encrypted)
   keys install [<user>@]<ssh-server>[:port]
