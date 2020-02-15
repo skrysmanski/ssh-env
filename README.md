@@ -66,7 +66,7 @@ This should give you an output like this:
 
 ### Notes
 * ssh-env works the same on Windows, Linux and macOS. The only difference is that on Windows you use `ssh-env` instead of `./ssh-env`. The rest of this section will use the *Linux style* but it'll work the same way on Windows.
-* ssh-env is completely self-contained and will not create or use any files outside of its directory. Thus, you can clone ssh-env as often as you want on your computer - without the copies interfering with each other.
+* ssh-env is completely self-contained and will not create or use any files outside of its directory. Thus, you can clone ssh-env as often as you want on your computer - without the copies interfering with each other. (Unless you install the data dir globally; see below for more information on this.)
 
 
 ## Getting started
@@ -81,11 +81,11 @@ This chapter describes how you get from zero to your first SSH connection with s
 ### Populating the ssh data dir
 Before you can use ssh-env, you need to populate its data directory: `ssh-data`
 
-This directory contains all your personal ssh files and is usually versioned with git - so that you can easily transfer its contents to other computers.
+This directory contains all your personal ssh files and should be versioned with git - so that you can easily transfer its contents to other computers.
 
 The contents of this directory are:
 
-* your ssh key pair
+* your ssh key pair (`id_rsa` and `id_rsa.pub`)
 * your ssh config (optional)
 * your `known_hosts` file
 
@@ -174,9 +174,10 @@ This section describes the file layout of ssh-env:
    * `id_rsa` (encrypted) private key of ssh key pair
    * `id_rsa.pub` public key of ssh key pair
    * `known_hosts` contains "ids" of known servers; created and modified by `ssh` itself
- * `.local/` local (i.e. per computer) ssh files; you don't need to backup these files
-   * `ssh-agent.config` ssh-agent configuration (i.e. whether to use and for how long to store decrypted private keys); created via `ssh-env agent config` or when sshing the first time into a machine and this file doesn't exist
-   * `ssh-agent.env` stores information about the running ssh-agent (must be kept private by all means); create when the ssh-agent is started
+ * `.local/` local (i.e. per computer) ssh files; you don't need to backup these files and these files should not be shared with other computers
+   * `ssh-agent.settings.json` ssh-agent configuration (i.e. whether to use it and for how long to store decrypted private keys); created via `ssh-env agent config` or when sshing the first time into a machine and this file doesn't exist
+   * `ssh-agent-env.json` stores information about the running ssh-agent (must be kept private by all means); create when the ssh-agent is started
+   * `ssh-env.settings.json`: local (not to be shared) configuration for ssh-env itself
    * `ssh.generated.conf`: Auto-generated SSH config file (based on `ssh-data/config`).
  * `ssh-env`: main bash script
  * `ssh-env.cmd`: main Windows batch file
@@ -190,11 +191,11 @@ There are a couple of thing that you can and should do to secure your ssh-env.
 ### Don't Trust Other Admins
 The first rule of thumb is: **Don't trust computers where someone else is (also) admin.**
 
-If you want to make sure noone else but you ever has access to your private key, use ssh-env only on computers where you are the *only* admin.
+If you want to make sure no one else but you ever has access to your private key, use ssh-env only on computers where you are the *only* admin.
 
 The next sections add additional layers of protection that make it harder - but certainly not 100% impossible - for a malicious user or admin to get their hands on your private key.
 
-Of course, the level of trust in the admin depends on your environment. In a corporate environment admins are usally more trustworthy than admins of an internet cafe. But better safe than sorry.
+Of course, the level of trust in the admin depends on your environment. In a corporate environment admins are usually more trustworthy than admins of an internet cafe. But better safe than sorry.
 
 
 ### Revoke Access For Anyone But You
@@ -226,7 +227,7 @@ However, both solutions (VMs and containers) have security problems - because th
 
 One could try to protect a VM by setting up proper passwords inside of the VM. But VMs are difficult to audit (since they run a whole operating system), and so while it may be possible to make using a VM secure, they're hardly easy to use.
 
-Since Docker on Windows just runs inside of a VM, the same problem applies to Docker as well. With Docker, it's even easier to get inside the container - because there is no authorization for `docker exec -ti /bin/sh`.
+Since Docker on Windows just runs inside of a VM, the same problem applies to Docker as well. With Docker, it's even easier to get inside the container - because there is no authorization required for `docker exec -ti /bin/sh`.
 
 
 ### Have a Dedicated Admin Machine
@@ -263,9 +264,9 @@ To synchronize Git repositories between computers you have (at least) three opti
  * use a self-hosted (on-premise) Git server
  * use a hosted Git server (like GitHub or Bitbucket)
 
-Even though your private key is only stored *highly* encrypted, I strongly advise against using a publicly visible repository. For that reason, if you don't want to run a self-hosted Git server, I recommend using Bitbucket (instead of GitHub) because Bitbucket gives you free private repositories (whereas GitHub does not; at least not for free).
+Even though your private key is only stored *highly* encrypted, I strongly advise against using a publicly visible repository. For that reason, if you don't want to run a self-hosted Git server, I recommend using Bitbucket or GitHub because they give you free private repositories.
 
-The most secure solution would be a self-hosted Git server. However, with this solution if you're using SSH+Git, you have to verify the host key of the Git server everytime you do an *initial* checkout. This doesn't happen if you use HTTPS+Git instead (if you have a valid SSL certificate).
+The most secure solution would be a self-hosted Git server. However, with this solution if you're using SSH+Git, you have to verify the host key of the Git server every time you do an *initial* checkout. This doesn't happen if you use HTTPS+Git instead (if you have a valid SSL certificate).
 
 I haven't put much thought into synchronizing via network shares. I've never seen or used such a setup and spontaneously I'd expect this to be complicated to setup (especially the access rights).
 
@@ -285,7 +286,7 @@ If you already have an SSH key pair and are certain that you want to use it (i.e
 
 **Important:** Only checkin the *end* result of the following steps into Git (or the version control system of your choice). Do *not* check in results of any intermediary step.
 
- 1. Copy your *private* key file into the `ssh-data` directory and name if `id_rsa`. Also copy your *public* key file into the `ssh-data` directory and name if `id_rsa.pub`. Make sure that you do *not* confuse these two files.
+ 1. Copy your *private* key file into the `ssh-data` directory and name it `id_rsa`. Also copy your *public* key file into the `ssh-data` directory and name it `id_rsa.pub`. Make sure that you do *not* confuse these two files.
  1. Run `./ssh-env keys check`
  1. If this shows `Encryption: encrypted, strong`, you're all set. You can skip to step 6. If not, or if you want to change the encryption password for the private key, continue with the next step.
  1. Go into the `ssh-data` directory and execute `ssh-keygen -o -p -f id_rsa`
@@ -294,6 +295,30 @@ If you already have an SSH key pair and are certain that you want to use it (i.e
 
 That's it.
 
+## Install data dir globally
+While ssh-env is self-contained, there may be SSH-based tools out there that won't work out-of-the-box with the data stored in an ssh-env.
+
+For these tools, you can install the data dir of an ssh-env globally for your user.
+
+Under the hood this means that ssh-env will take control of your `~/.ssh/config` file and fill it with some auto-generated content.
+
+This way the above mentioned SSH-based tools get access to your SSH key (and all your other settings).
+
+**Note:** Only *one* ssh-env can be globally installed per user at the same time.
+
+To install your data dir globally, call:
+
+```
+./ssh-env datadir global-install
+```
+
+To make your private key available to SSH-based tools, you can either connect to a host or call:
+
+```
+./ssh-env keys load
+```
+
+**Tip:** This feature works great with [Visual Studio Code's Remote Development](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh) extension.
 
 ## Using Predefined Hosts
 The ssh `config` file (in `ssh-data`) allows you to organize certain SSH host configurations under a name.
@@ -339,4 +364,6 @@ Based on the **Easy-to-use, maintainable, secure** principle, here are the decis
 ## Disclaimer
 While I'm trying to make ssh-env as secure as possible, I'm not considering myself a security professional. I just understand the basic concepts.
 
-So, use ssh-env at your own risk.
+So, use ssh-env at your own risk (and/or check out all the source code).
+
+That being said, I'm using ssh-env productively (and therefor am trusting it).
