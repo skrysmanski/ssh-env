@@ -28,5 +28,5 @@ function Set-SshEnvConfig([bool] $GloballyInstalled) {
 	}
 
 	$configAsString = ConvertTo-Json $config
-	Write-FileUtf8NoBom -Path $configFilePath -Contents $configAsString
+	Write-FileUtf8NoBom -FilePath $configFilePath -Contents $configAsString
 }

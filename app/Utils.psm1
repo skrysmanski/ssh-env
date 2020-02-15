@@ -15,22 +15,22 @@ $script:Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
 #   6.0, the default utf8 encoding doesn't seem to include the BOM anymore.
 # NOTE 2: This method does get its contents from a pipeline because this would make the
 #   code unnecessary complicated to read.
-function Write-FileUtf8NoBom([string] $Path, $Contents) {
+function Write-FileUtf8NoBom([string] $FilePath, $Contents) {
 	# NOTE: We can't use the Out-File cmdlet here as it doesn't accept a custom encoding.
-	[IO.File]::WriteAllLines($Path, $Contents, $script:Utf8NoBomEncoding)
+	[IO.File]::WriteAllLines($FilePath, $Contents, $script:Utf8NoBomEncoding)
 }
 
-function Write-FileSafe([String] $Filename, $Contents, [String] $PosixFilePermissions = '0600') {
+function Write-FileSafe([String] $FilePath, $Contents, [String] $PosixFilePermissions = '0600') {
 	if (Test-IsPosix) {
 		# We make sure that the file permissions are set BEFORE the file is filled with content.
-		if (-Not (Test-Path $Filename -PathType Leaf)) {
-			'' | Out-File $Filename
+		if (-Not (Test-Path $FilePath -PathType Leaf)) {
+			'' | Out-File $FilePath
 		}
 
-		& chmod $PosixFilePermissions $Filename
+		& chmod $PosixFilePermissions $FilePath
 	}
 
-	Write-FileUtf8NoBom -Path $Filename -Contents $Contents
+	Write-FileUtf8NoBom -FilePath $FilePath -Contents $Contents
 }
 
 # Synchronizes the .NET working directory with the PowerShell working directory (which - for

@@ -141,6 +141,6 @@ function Assert-SshConfigIsUpToDate {
 		}
 	}
 
-	Write-FileUtf8NoBom -Path $runtimeSshConfigPath -Contents $runtimeSshConfig
+	Write-FileUtf8NoBom -FilePath $runtimeSshConfigPath -Contents $runtimeSshConfig
 	return $runtimeSshConfigPath
 }

@@ -33,7 +33,7 @@ function Initialize-SshAgentConfig {
 	$configFileContents = $data | ConvertTo-Json
 
 	$configFilePath = Get-SshAgentConfigFilePath
-	Write-FileUtf8NoBom -Path $configFilePath -Contents $configFileContents
+	Write-FileUtf8NoBom -FilePath $configFilePath -Contents $configFileContents
 
 	Write-Host
 	Write-Host -NoNewline 'SSH agent config file created at: '
