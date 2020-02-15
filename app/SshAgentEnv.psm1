@@ -136,3 +136,14 @@ function Test-SshAgentPid($agentPid) {
 
 	return $false
 }
+
+function Get-SshAgentSockFilePath() {
+	$agentPid = Get-SshAgentPid
+
+	if (-Not $agentPid) {
+		# Agent is not running
+		return $null
+	}
+
+	return $env:SSH_AUTH_SOCK
+}
