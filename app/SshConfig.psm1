@@ -2,14 +2,42 @@
 $script:ErrorActionPreference = 'Stop'
 
 Import-Module "$PSScriptRoot/SshEnvPaths.psm1" -DisableNameChecking
+Import-Module "$PSScriptRoot/SshEnvConf.psm1" -DisableNameChecking
 Import-Module "$PSScriptRoot/SshAgentConf.psm1" -DisableNameChecking
 Import-Module "$PSScriptRoot/SshAgent.psm1" -DisableNameChecking
 Import-Module "$PSScriptRoot/SshAgentEnv.psm1" -DisableNameChecking
 
+function Get-GlobalSshConfigPath([switch] $CreateDirIfNotExists) {
+	$baseDir = "$HOME/.ssh"
+
+	if ($CreateDirIfNotExists -and (-Not (Test-Path $baseDir -PathType Container))) {
+		New-Item $baseDir -ItemType Directory | Out-Null
+	}
+
+	return "$baseDir/config"
+}
+
 function Get-SshConfigPath([bool] $RuntimeConfig = $true, [bool] $CreateDirIfNotExists = $false) {
 	if ($runtimeConfig) {
 		$localDataPath = Get-SshLocalDataPath
-		return Join-Path $localDataPath 'ssh.generated.conf'
+		$localRuntimeConfigPath = Join-Path $localDataPath 'ssh.generated.conf'
+
+		$sshEnvConf = Get-SshEnvConfig
+		if ($sshEnvConf.GloballyInstalled) {
+			# If the ssh config is globally installed, remove the local version to avoid
+			# confusion (and bugs).
+			if (Test-Path $localRuntimeConfigPath) {
+				Remove-Item $localRuntimeConfigPath
+			}
+
+			# NOTE: If globally installed, we switch over to the "global" config file. Unfortunaly,
+			#   we can't use a symlink for this because creating symlinks on Windows requires admin
+			#   rights. -.-
+			return Get-GlobalSshConfigPath -CreateDirIfNotExists
+		}
+		else {
+			return $localRuntimeConfigPath
+		}
 	}
 	else {
 		$sshDataPath = Get-SshDataPath -CreateIfNotExists $CreateDirIfNotExists
@@ -76,6 +104,7 @@ function Create-RuntimeSshConfig {
 #   to make multi-hop SSH hosts (i.e. ProxyCommand) easier.
 # Location of the "known_hosts" file.
 UserKnownHostsFile $sshDataPath/known_hosts
+
 # Location of the private key file.
 IdentityFile $privateKeyPath
 
