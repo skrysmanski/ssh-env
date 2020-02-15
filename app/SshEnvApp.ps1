@@ -28,7 +28,7 @@ function Invoke-SshWithAgent {
 	& $sshCommand.Source -F $sshConfigPath @args
 }
 
-function Execute-SshEnvApp {
+function Invoke-SshEnvApp {
 	# Make sure everything is installed properly.
 	Assert-SoftwareInstallation
 
@@ -215,7 +215,7 @@ function Execute-SshEnvApp {
 }
 
 try {
-	Execute-SshEnvApp @args
+	Invoke-SshEnvApp @args
 }
 catch {
 	function LogError([string] $exception) {
