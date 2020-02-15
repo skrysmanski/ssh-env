@@ -31,7 +31,7 @@ function Assert-SshDataDirDoesntExist {
 	}
 }
 
-function Clone-DataDir {
+function Initialize-DataDirViaGitClone {
 	Assert-SshDataDirDoesntExist
 
 	$gitUrl = Prompt-Text 'URL to SSH data Git repository' -AllowEmpty $false
@@ -50,7 +50,7 @@ function Clone-DataDir {
 	Write-Host
 }
 
-function New-DataDir {
+function Initialize-DataDirFromScratch {
 	Assert-SshDataDirDoesntExist
 
 	$hasSshKey = Prompt-YesNo 'Do you have an SSH key pair (in case of doubt: no)?'

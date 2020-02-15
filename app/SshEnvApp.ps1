@@ -75,12 +75,12 @@ function Execute-SshEnvApp {
 		'datadir' {
 			switch ($args[1]) {
 				'clone' {
-					Clone-DataDir
+					Initialize-DataDirViaGitClone
 					break
 				}
 
 				'init' {
-					New-DataDir
+					Initialize-DataDirFromScratch
 					break
 				}
 
