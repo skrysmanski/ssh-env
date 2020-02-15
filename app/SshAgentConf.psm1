@@ -1,8 +1,8 @@
 # Stop on every error
 $script:ErrorActionPreference = 'Stop'
 
-Import-Module "$PSScriptRoot/SshEnvPaths.psm1" -DisableNameChecking
-Import-Module "$PSScriptRoot/Utils.psm1" -DisableNameChecking
+Import-Module "$PSScriptRoot/SshEnvPaths.psm1"
+Import-Module "$PSScriptRoot/Utils.psm1"
 
 function Get-SshAgentConfigFilePath {
 	$localDataPath = Get-SshLocalDataPath

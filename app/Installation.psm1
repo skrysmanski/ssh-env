@@ -1,7 +1,7 @@
 # Stop on every error
 $script:ErrorActionPreference = 'Stop'
 
-Import-Module "$PSScriptRoot/Utils.psm1" -DisableNameChecking
+Import-Module "$PSScriptRoot/Utils.psm1"
 
 function Assert-SoftwareInstallation {
 	$sshCommand = Get-Command 'ssh' -ErrorAction SilentlyContinue

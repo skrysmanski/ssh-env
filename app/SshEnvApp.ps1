@@ -3,13 +3,13 @@ $script:ErrorActionPreference = 'Stop'
 
 & $PSScriptRoot/Unload-Modules.ps1
 
-Import-Module "$PSScriptRoot/SshEnvPaths.psm1" -DisableNameChecking
-Import-Module "$PSScriptRoot/SshEnvConf.psm1" -DisableNameChecking
-Import-Module "$PSScriptRoot/SshAgent.psm1" -DisableNameChecking
-Import-Module "$PSScriptRoot/SshKey.psm1" -DisableNameChecking
-Import-Module "$PSScriptRoot/SshEnvAppAux.psm1" -DisableNameChecking
-Import-Module "$PSScriptRoot/Installation.psm1" -DisableNameChecking
-Import-Module "$PSScriptRoot/SshDataDir.psm1" -DisableNameChecking
+Import-Module "$PSScriptRoot/SshEnvPaths.psm1"
+Import-Module "$PSScriptRoot/SshEnvConf.psm1"
+Import-Module "$PSScriptRoot/SshAgent.psm1"
+Import-Module "$PSScriptRoot/SshKey.psm1"
+Import-Module "$PSScriptRoot/SshEnvAppAux.psm1"
+Import-Module "$PSScriptRoot/Installation.psm1"
+Import-Module "$PSScriptRoot/SshDataDir.psm1"
 
 if ($args.Length -eq 0) {
 	Write-Help 'No command specified'

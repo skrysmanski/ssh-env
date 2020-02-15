@@ -1,11 +1,11 @@
 # Stop on every error
 $script:ErrorActionPreference = 'Stop'
 
-Import-Module "$PSScriptRoot/SshEnvPaths.psm1" -DisableNameChecking
-Import-Module "$PSScriptRoot/SshEnvConf.psm1" -DisableNameChecking
-Import-Module "$PSScriptRoot/SshAgentConf.psm1" -DisableNameChecking
-Import-Module "$PSScriptRoot/SshAgent.psm1" -DisableNameChecking
-Import-Module "$PSScriptRoot/SshAgentEnv.psm1" -DisableNameChecking
+Import-Module "$PSScriptRoot/SshEnvPaths.psm1"
+Import-Module "$PSScriptRoot/SshEnvConf.psm1"
+Import-Module "$PSScriptRoot/SshAgentConf.psm1"
+Import-Module "$PSScriptRoot/SshAgent.psm1"
+Import-Module "$PSScriptRoot/SshAgentEnv.psm1"
 
 function Get-GlobalSshConfigPath([bool] $CreateDirIfNotExists) {
 	$baseDir = "$HOME/.ssh"

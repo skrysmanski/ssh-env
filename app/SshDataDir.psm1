@@ -1,10 +1,10 @@
 # Stop on every error
 $script:ErrorActionPreference = 'Stop'
 
-Import-Module "$PSScriptRoot/SshEnvPaths.psm1" -DisableNameChecking
-Import-Module "$PSScriptRoot/Utils.psm1" -DisableNameChecking
-Import-Module "$PSScriptRoot/SshKey.psm1" -DisableNameChecking
-Import-Module "$PSScriptRoot/SshConfig.psm1" -DisableNameChecking
+Import-Module "$PSScriptRoot/SshEnvPaths.psm1"
+Import-Module "$PSScriptRoot/Utils.psm1"
+Import-Module "$PSScriptRoot/SshKey.psm1"
+Import-Module "$PSScriptRoot/SshConfig.psm1"
 
 #
 # Checks whether the SSH data dir exists and is not empty. If this function returns
@@ -34,7 +34,7 @@ function Assert-SshDataDirDoesntExist {
 function Initialize-DataDirViaGitClone {
 	Assert-SshDataDirDoesntExist
 
-	$gitUrl = Prompt-Text 'URL to SSH data Git repository' -AllowEmpty $false
+	$gitUrl = Read-TextPrompt 'URL to SSH data Git repository' -AllowEmpty $false
 
 	$sshDataPath = Get-SshDataPath -CreateIfNotExists $true
 	& git clone $gitUrl $sshDataPath

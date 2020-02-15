@@ -1,9 +1,9 @@
 # Stop on every error
 $script:ErrorActionPreference = 'Stop'
 
-Import-Module "$PSScriptRoot/Utils.psm1" -DisableNameChecking
-Import-Module "$PSScriptRoot/SshAgentConf.psm1" -DisableNameChecking
-Import-Module "$PSScriptRoot/SshAgentEnv.psm1" -DisableNameChecking
+Import-Module "$PSScriptRoot/Utils.psm1"
+Import-Module "$PSScriptRoot/SshAgentConf.psm1"
+Import-Module "$PSScriptRoot/SshAgentEnv.psm1"
 
 Enum SshAgentStatus {
 	RunningWithKey = 0

@@ -1,8 +1,8 @@
 # Stop on every error
 $script:ErrorActionPreference = 'Stop'
 
-Import-Module "$PSScriptRoot/Utils.psm1" -DisableNameChecking
-Import-Module "$PSScriptRoot/SshConfig.psm1" -DisableNameChecking
+Import-Module "$PSScriptRoot/Utils.psm1"
+Import-Module "$PSScriptRoot/SshConfig.psm1"
 
 function New-SshKey {
 	# Request the user's name from the user. Note this is actually just

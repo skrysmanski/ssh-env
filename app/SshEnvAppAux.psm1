@@ -1,7 +1,7 @@
 # Stop on every error
 $script:ErrorActionPreference = 'Stop'
 
-Import-Module "$PSScriptRoot/Utils.psm1" -DisableNameChecking
+Import-Module "$PSScriptRoot/Utils.psm1"
 
 function Get-EnvVersion {
 	return Get-Content "$PSScriptRoot/VERSION.txt" -Encoding 'utf8'
