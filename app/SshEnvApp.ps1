@@ -118,6 +118,18 @@ function Execute-SshEnvApp {
 					break
 				}
 
+				'load' {
+					$agentConf = Get-SshAgentConfig -CreateIfNotExists
+					if ($agentConf.useSshAgent) {
+						$privateKeyPath = Get-SshPrivateKeyPath
+						Ensure-SshAgentState -SshPrivateKeyPath $privateKeyPath
+					}
+					else {
+						Write-Error 'Use of ssh-agent is disabled by configuration.'
+					}
+					break
+				}
+
 				'' {
 					Write-HelpAndExit "Missing 'keys' command"
 					break

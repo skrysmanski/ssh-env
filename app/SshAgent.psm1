@@ -174,17 +174,7 @@ function Ensure-SshAgentState([String] $SshPrivateKeyPath) {
 		Write-Error "Private SSH key doesn't exist at: $SshPrivateKeyPath`nDid you run: ./ssh-env datadir init/clone ?"
 	}
 
-	$agentConf = Get-SshAgentConfig
-	if (-Not $agentConf) {
-		$agentConfPath = Get-SshAgentConfigFilePath
-		Write-Host
-		Write-Host -ForegroundColor Green -NoNewline $agentConfPath
-		Write-Host " doesn't exist. Creating it."
-		Write-Host
-		Configure-SshAgent
-
-		$agentConf = Get-SshAgentConfig
-	}
+	$agentConf = Get-SshAgentConfig -CreateIfNotExists
 
 	if ($agentConf.useSshAgent) {
 		$agentStatus = Get-SshAgentStatus

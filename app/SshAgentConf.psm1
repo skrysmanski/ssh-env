@@ -41,11 +41,20 @@ function Configure-SshAgent {
 	Write-Host
 }
 
-function Get-SshAgentConfig {
+function Get-SshAgentConfig([switch] $CreateIfNotExists) {
 	$configFilePath = Get-SshAgentConfigFilePath
 
 	if (-Not (Test-Path $configFilePath)) {
-		return $null
+		if ($CreateIfNotExists) {
+			Write-Host
+			Write-Host -ForegroundColor Green -NoNewline $configFilePath
+			Write-Host " doesn't exist. Creating it."
+			Write-Host
+			Configure-SshAgent
+		}
+		else {
+			return $null
+		}
 	}
 
 	return Get-Content $configFilePath -Encoding 'utf8' | ConvertFrom-Json

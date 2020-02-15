@@ -22,6 +22,7 @@ Commands:
                              Installs the public key on the specified server (requires password
                              authentication)
   keys check                 Checks the SSH key pair for problems (no password, weak encryption)
+  keys load                  Loads the configured SSH key pair into the ssh-agent
 
   help, --help, -h           Displays this help page
   version, --version, -v     Prints the ssh-env and OpenSSH client version
