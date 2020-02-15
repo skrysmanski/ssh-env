@@ -7,19 +7,19 @@ function Get-EnvVersion {
 	return Get-Content "$PSScriptRoot/VERSION.txt" -Encoding 'utf8'
 }
 
-function Write-Help([String] $error = $null) {
-	if ($error) {
-		Write-Host -ForegroundColor Red "ERROR: $error"
+function Write-Help([String] $errorMessage = $null) {
+	if ($errorMessage) {
+		Write-Host -ForegroundColor Red "ERROR: $errorMessage"
 		Write-Host
 	}
 
 	Get-Content "$PSScriptRoot/help.txt" -Encoding 'utf8' | Write-Host
 }
 
-function Write-HelpAndExit([String] $error = $null) {
-	Write-Help $error
+function Write-HelpAndExit([String] $errorMessage = $null) {
+	Write-Help $errorMessage
 
-	if ($error) {
+	if ($errorMessage) {
 		exit 1
 	}
 	else {
