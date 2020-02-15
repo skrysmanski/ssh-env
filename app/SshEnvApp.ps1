@@ -32,7 +32,7 @@ function Invoke-SshEnvApp {
 	# Make sure everything is installed properly.
 	Assert-SoftwareInstallation
 
-	Assert-FolderIsEncrypted
+	Assert-AppDirectoriesAreEncrypted
 	Assert-CorrectSshKeyPermissions
 
 	switch -Regex ($args[0]) {

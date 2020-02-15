@@ -27,12 +27,23 @@ function Write-HelpAndExit([String] $errorMessage = $null) {
 	}
 }
 
-function Assert-FolderIsEncrypted {
-	$appPath = Split-Path $PSScriptRoot -Parent
-	if ((Test-IsFolderEncrypted $appPath) -eq $false) {
-		Write-Host -ForegroundColor Yellow "WARNING: This folder is not encrypted. You should encrypt it for"
-		Write-Host -ForegroundColor Yellow "  improved security. For more information, go to:"
+function Assert-DirectoryIsEncrypted($Path) {
+	if (-Not (Test-Path $Path)) {
+		return
+	}
+
+	if ((Test-IsFolderEncrypted $Path) -eq $false) {
+		Write-Host -ForegroundColor Yellow "WARNING: The directory '$Path' is not encrypted."
+		Write-Host -ForegroundColor Yellow "  You should encrypt it for improved security. For more information, go to:"
 		Write-Host -ForegroundColor Yellow "  https://msdn.microsoft.com/en-us/library/dd163562.aspx"
 		Write-Host
 	}
+}
+
+function Assert-AppDirectoriesAreEncrypted {
+	$appPath = Split-Path $PSScriptRoot -Parent
+	Assert-DirectoryIsEncrypted $appPath
+
+	$globalSshDir = [IO.Path]::Combine($HOME, '.ssh')
+	Assert-DirectoryIsEncrypted $globalSshDir
 }
