@@ -83,6 +83,13 @@ IdentityFile $privateKeyPath
 # by just referencing this config file.
 IdentityAgent $sshAgentSockFilePath
 
+# Prevents ssh from adding the SSH key to the ssh-agent.
+# NOTE: We set this to 'no' because there's no way to configure the
+#   key's lifetime via the SSH config. If we enabled this setting,
+#   all keys would be added with "infinite" lifetime to the ssh-agent -
+#   thereby ignoring the configured lifetime (in ssh-agent-config.json).
+AddKeysToAgent no
+
 ###################################
 
 $sshConfig
