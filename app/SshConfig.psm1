@@ -64,7 +64,7 @@ function Get-SshPublicKeyPath {
 	return $privateKeyPath + '.pub'
 }
 
-function Create-RuntimeSshConfig {
+function Get-RuntimeSshConfig {
 	$sshConfigPath = Get-SshConfigPath -RuntimeConfig $false
 	if (Test-Path $sshConfigPath) {
 		$sshConfig = Get-Content $sshConfigPath -Encoding 'utf8' -Raw
@@ -128,8 +128,8 @@ $sshConfig
 "@
 }
 
-function Ensure-SshConfigIsUpToDate {
-	$runtimeSshConfig = Create-RuntimeSshConfig
+function Assert-SshConfigIsUpToDate {
+	$runtimeSshConfig = Get-RuntimeSshConfig
 
 	$runtimeSshConfigPath = Get-SshConfigPath -RuntimeConfig $true
 	if (Test-Path $runtimeSshConfigPath) {

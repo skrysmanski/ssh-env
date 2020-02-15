@@ -30,7 +30,7 @@ function New-SshKey {
 }
 
 function Install-SshKey([String] $SshTarget) {
-	$sshConfigPath = Ensure-SshConfigIsUpToDate
+	$sshConfigPath = Assert-SshConfigIsUpToDate
 
 	$sshPublicKeyPath = Get-SshPublicKeyPath
 	$publicKey = Get-Content $sshPublicKeyPath -Encoding 'utf8'

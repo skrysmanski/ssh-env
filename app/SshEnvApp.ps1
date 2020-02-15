@@ -17,7 +17,7 @@ if ($args.Length -eq 0) {
 }
 
 function Invoke-SshWithAgent {
-	$sshConfigPath = Ensure-SshConfigIsUpToDate
+	$sshConfigPath = Assert-SshConfigIsUpToDate
 
 	$privateKeyPath = Get-SshPrivateKeyPath
 	Assert-SshAgentState -SshPrivateKeyPath $privateKeyPath
@@ -160,7 +160,7 @@ function Execute-SshEnvApp {
 					if ($agentConf.useSshAgent) {
 						# Make sure the generated ssh_config is up-to-date so that it can be
 						# used by external processes.
-						Ensure-SshConfigIsUpToDate | Out-Null
+						Assert-SshConfigIsUpToDate | Out-Null
 
 						$privateKeyPath = Get-SshPrivateKeyPath
 						Assert-SshAgentState -SshPrivateKeyPath $privateKeyPath

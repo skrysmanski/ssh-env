@@ -123,13 +123,13 @@ function Install-DataDirGlobally() {
 
 	Set-SshEnvConfig -GloballyInstalled $true
 
-	Ensure-SshConfigIsUpToDate | Out-Null
+	Assert-SshConfigIsUpToDate | Out-Null
 }
 
 function Uninstall-DataDirGlobally() {
 	Set-SshEnvConfig -GloballyInstalled $false
 
-	Ensure-SshConfigIsUpToDate | Out-Null
+	Assert-SshConfigIsUpToDate | Out-Null
 
 	$globalConfigPath = Get-GlobalSshConfigPath -CreateDirIfNotExists $false
 
