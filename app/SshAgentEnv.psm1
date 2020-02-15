@@ -32,7 +32,7 @@ function Import-SshAgentEnv([bool] $Force = $false) {
 		}
 
 		$envFileContents = Get-Content $oldEnvFilePath -Encoding 'utf8'
-		$agentEnv = Parse-NativeSshAgentEnvText $envFileContents
+		$agentEnv = ConvertFrom-NativeSshAgentEnvText $envFileContents
 		if (-Not $agentEnv) {
 			# File is incomplete or otherwise damaged.
 			return
@@ -67,7 +67,7 @@ function Import-SshAgentEnv([bool] $Force = $false) {
 	}
 }
 
-function Parse-NativeSshAgentEnvText($NativeAgentEnv) {
+function ConvertFrom-NativeSshAgentEnvText($NativeAgentEnv) {
 	foreach ($envLine in $NativeAgentEnv) {
 		if ($envLine -match '^\s*setenv\s+([^\s]+)\s+([^;]+)\s*;\s*$') {
 			if ($Matches[1] -eq 'SSH_AUTH_SOCK') {

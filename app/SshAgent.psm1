@@ -96,7 +96,7 @@ function Start-SshAgent {
 		throw "'ssh-agent -c' didn't return any configuration"
 	}
 
-	$agentEnv = Parse-NativeSshAgentEnvText $agentEnvAsString
+	$agentEnv = ConvertFrom-NativeSshAgentEnvText $agentEnvAsString
 	if (-Not $agentEnv) {
 		Write-Error "The process 'ssh-agent' could be started but it didn't provide all the necessary information."
 	}
