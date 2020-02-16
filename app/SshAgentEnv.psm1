@@ -99,7 +99,7 @@ function Save-SshAgentEnv($AgentEnvAsObject) {
 	$envFilePath = Get-SshAgentEnvFilePath
 
 	$agentEnvAsString = ConvertTo-Json $AgentEnvAsObject
-	Write-FileSafe -FilePath $envFilePath -Contents $agentEnvAsString
+	Write-FileUtf8NoBomWithSecurePermissions -FilePath $envFilePath -Contents $agentEnvAsString
 }
 
 function Clear-SshAgentEnv() {

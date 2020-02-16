@@ -20,7 +20,7 @@ function Write-FileUtf8NoBom([string] $FilePath, $Contents) {
 	[IO.File]::WriteAllLines($FilePath, $Contents, $script:Utf8NoBomEncoding)
 }
 
-function Write-FileSafe([String] $FilePath, $Contents, [String] $PosixFilePermissions = '0600') {
+function Write-FileUtf8NoBomWithSecurePermissions([String] $FilePath, $Contents, [String] $PosixFilePermissions = '0600') {
 	if (Test-IsPosix) {
 		# We make sure that the file permissions are set BEFORE the file is filled with content.
 		if (-Not (Test-Path $FilePath -PathType Leaf)) {
