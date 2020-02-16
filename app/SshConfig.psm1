@@ -135,8 +135,7 @@ function Assert-SshConfigIsUpToDate {
 	$runtimeSshConfigPath = Get-SshConfigPath -RuntimeConfig $true -CreateDirIfNotExists $true
 	if (Test-Path $runtimeSshConfigPath) {
 		$runtimeConfigFromDisk = Get-Content $runtimeSshConfigPath -Encoding 'utf8' -Raw
-		if ($runtimeConfigFromDisk -ceq $runtimeSshConfig)
-		{
+		if ($runtimeConfigFromDisk -ceq $runtimeSshConfig) {
 			# Already up-to-date
 			return $runtimeSshConfigPath
 		}

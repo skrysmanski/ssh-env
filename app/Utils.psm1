@@ -17,7 +17,12 @@ $script:Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
 #   code unnecessary complicated to read.
 function Write-FileUtf8NoBom([string] $FilePath, $Contents) {
 	# NOTE: We can't use the Out-File cmdlet here as it doesn't accept a custom encoding.
-	[IO.File]::WriteAllLines($FilePath, $Contents, $script:Utf8NoBomEncoding)
+	if ($Contents.GetType() -eq [string]) {
+		[IO.File]::WriteAllText($FilePath, $Contents, $script:Utf8NoBomEncoding)
+	}
+	else {
+		[IO.File]::WriteAllLines($FilePath, $Contents, $script:Utf8NoBomEncoding)
+	}
 }
 
 function Write-FileUtf8NoBomWithSecurePermissions([String] $FilePath, $Contents, [String] $PosixFilePermissions = '0600') {
