@@ -45,6 +45,9 @@ function Assert-SoftwareInstallation {
 	}
 }
 
+#
+# Returns the SSH programs used by ssh-env (as a list).
+#
 function Get-RequiredSshBinaries {
 	return @(
 		'ssh',
@@ -73,6 +76,10 @@ function Get-SshBinariesPathOnWindows {
 	return $null
 }
 
+#
+# Checks whether the specified path contains an SSH installation (or to
+# be more specific: all SSH programs required by ssh-env).
+#
 function Test-SshBinariesExist([string] $suspectedPath) {
 	if (-Not (Test-Path $suspectedPath -PathType Container)) {
 		return $false

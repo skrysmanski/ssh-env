@@ -6,7 +6,7 @@ function Test-IsPosix {
 }
 
 function Test-IsWindows {
-	return  [System.Environment]::OSVersion.Platform -eq 'Win32NT'
+	return [System.Environment]::OSVersion.Platform -eq 'Win32NT'
 }
 
 $script:Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
