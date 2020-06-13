@@ -44,6 +44,7 @@ function Assert-SoftwareInstallation {
 		}
 	}
 }
+Export-ModuleMember -Function Assert-SoftwareInstallation
 
 #
 # Returns the SSH programs used by ssh-env (as a list).

@@ -19,11 +19,14 @@ function Get-SshEnvPath([string] $RelativePath, [bool] $CreateIfNotExists) {
 
 	return $Path
 }
+Export-ModuleMember -Function Get-SshEnvPath
 
 function Get-SshDataPath([bool] $CreateIfNotExists = $false) {
 	return Get-SshEnvPath 'ssh-data' -CreateIfNotExists $CreateIfNotExists
 }
+Export-ModuleMember -Function Get-SshDataPath
 
 function Get-SshLocalDataPath([bool] $CreateIfNotExists = $true) {
 	return Get-SshEnvPath '.local' -CreateIfNotExists $CreateIfNotExists
 }
+Export-ModuleMember -Function Get-SshLocalDataPath

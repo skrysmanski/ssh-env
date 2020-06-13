@@ -40,6 +40,7 @@ function Initialize-SshAgentConfig {
 	Write-Host -ForegroundColor Green $configFilePath
 	Write-Host
 }
+Export-ModuleMember -Function Initialize-SshAgentConfig
 
 function Get-SshAgentConfig([switch] $CreateIfNotExists) {
 	$configFilePath = Get-SshAgentConfigFilePath
@@ -59,3 +60,4 @@ function Get-SshAgentConfig([switch] $CreateIfNotExists) {
 
 	return Get-Content $configFilePath -Encoding 'utf8' -Raw | ConvertFrom-Json
 }
+Export-ModuleMember -Function Get-SshAgentConfig

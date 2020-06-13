@@ -28,6 +28,7 @@ function New-SshKey {
 
 	Assert-CorrectSshKeyPermissions
 }
+Export-ModuleMember -Function New-SshKey
 
 function Install-SshKey([String] $SshTarget) {
 	$sshConfigPath = Assert-SshConfigIsUpToDate
@@ -60,6 +61,7 @@ function Install-SshKey([String] $SshTarget) {
 	# * https://github.com/openssh/openssh-portable/blob/master/contrib/ssh-copy-id
 	$publicKey | & ssh -F $sshConfigPath -o 'PreferredAuthentications keyboard-interactive,password' -p $port $SshTarget "exec sh -c 'cd ; umask 077 ; mkdir -p .ssh && cat >> .ssh/authorized_keys || exit 1'"
 }
+Export-ModuleMember -Function Install-SshKey
 
 function Write-SshKeyEncryptionStateToHost {
 	$sshPrivateKeyPath = Get-SshPrivateKeyPath
@@ -92,6 +94,7 @@ function Write-SshKeyEncryptionStateToHost {
 		}
 	}
 }
+Export-ModuleMember -Function Write-SshKeyEncryptionStateToHost
 
 function Assert-CorrectSshKeyPermissions {
 	if (Test-IsPosix) {
@@ -104,3 +107,4 @@ function Assert-CorrectSshKeyPermissions {
 		}
 	}
 }
+Export-ModuleMember -Function Assert-CorrectSshKeyPermissions

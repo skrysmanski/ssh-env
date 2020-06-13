@@ -16,6 +16,7 @@ function Get-GlobalSshConfigPath([bool] $CreateDirIfNotExists) {
 
 	return [IO.Path]::Combine($baseDir, 'config')
 }
+Export-ModuleMember -Function Get-GlobalSshConfigPath
 
 function Get-SshConfigPath([bool] $RuntimeConfig = $true, [bool] $CreateDirIfNotExists = $false) {
 	if ($runtimeConfig) {
@@ -44,6 +45,7 @@ function Get-SshConfigPath([bool] $RuntimeConfig = $true, [bool] $CreateDirIfNot
 		return Join-Path $sshDataPath 'config'
 	}
 }
+Export-ModuleMember -Function Get-SshConfigPath
 
 function New-DefaultSshConfig {
 	$sshConfigPath = Get-SshConfigPath -RuntimeConfig $false -CreateDirIfNotExists $true
@@ -53,16 +55,19 @@ function New-DefaultSshConfig {
 
 	Copy-Item "$PSScriptRoot/default-ssh-config.conf" $sshConfigPath
 }
+Export-ModuleMember -Function New-DefaultSshConfig
 
 function Get-SshPrivateKeyPath([bool] $CreateDirIfNotExists = $false) {
 	$sshDataPath = Get-SshDataPath -CreateIfNotExists $CreateDirIfNotExists
 	return Join-Path $sshDataPath 'id_rsa'
 }
+Export-ModuleMember -Function Get-SshPrivateKeyPath
 
 function Get-SshPublicKeyPath {
 	$privateKeyPath = Get-SshPrivateKeyPath
 	return $privateKeyPath + '.pub'
 }
+Export-ModuleMember -Function Get-SshPublicKeyPath
 
 function Get-RuntimeSshConfig {
 	$sshConfigPath = Get-SshConfigPath -RuntimeConfig $false
@@ -146,3 +151,4 @@ function Assert-SshConfigIsUpToDate {
 	Write-FileUtf8NoBomWithSecurePermissions -FilePath $runtimeSshConfigPath -Contents $runtimeSshConfig
 	return $runtimeSshConfigPath
 }
+Export-ModuleMember -Function Assert-SshConfigIsUpToDate

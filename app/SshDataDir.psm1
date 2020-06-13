@@ -24,6 +24,7 @@ function Test-SshDataDirExists {
 
 	return $true
 }
+Export-ModuleMember -Function Test-SshDataDirExists
 
 function Assert-SshDataDirDoesntExist {
 	if (Test-SshDataDirExists) {
@@ -49,6 +50,7 @@ function Initialize-DataDirViaGitClone {
 	Write-Host -ForegroundColor Green 'sucess'
 	Write-Host
 }
+Export-ModuleMember -Function Initialize-DataDirViaGitClone
 
 function Initialize-DataDirFromScratch {
 	Assert-SshDataDirDoesntExist
@@ -112,6 +114,7 @@ function Initialize-DataDirFromScratch {
 		Write-Host " *  Public key:  $sshPublicKeyPath"
 	}
 }
+Export-ModuleMember -Function Initialize-DataDirFromScratch
 
 # Makes the data dir available directly to "ssh" (i.e. without using ssh-env).
 function Install-DataDirGlobally() {
@@ -125,6 +128,7 @@ function Install-DataDirGlobally() {
 
 	Assert-SshConfigIsUpToDate | Out-Null
 }
+Export-ModuleMember -Function Install-DataDirGlobally
 
 function Uninstall-DataDirGlobally() {
 	Set-SshEnvConfig -GloballyInstalled $false
@@ -140,3 +144,4 @@ function Uninstall-DataDirGlobally() {
 		}
 	}
 }
+Export-ModuleMember -Function Uninstall-DataDirGlobally

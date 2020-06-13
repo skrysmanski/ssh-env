@@ -19,6 +19,7 @@ function Get-SshEnvConfig() {
 
 	return Get-Content $configFilePath -Encoding 'utf8' -Raw | ConvertFrom-Json
 }
+Export-ModuleMember -Function Get-SshEnvConfig
 
 function Set-SshEnvConfig([bool] $GloballyInstalled) {
 	$configFilePath = Get-SshEnvConfigFilePath
@@ -30,3 +31,4 @@ function Set-SshEnvConfig([bool] $GloballyInstalled) {
 	$configAsString = ConvertTo-Json $config
 	Write-FileUtf8NoBom -FilePath $configFilePath -Contents $configAsString
 }
+Export-ModuleMember -Function Set-SshEnvConfig

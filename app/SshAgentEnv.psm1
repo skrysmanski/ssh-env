@@ -12,6 +12,7 @@ function Get-SshAgentEnvFilePath([bool] $OldFile = $false) {
 		return Join-Path $localDataPath 'ssh-agent.env'
 	}
 }
+Export-ModuleMember -Function Get-SshAgentEnvFilePath
 
 #
 # Loads the ssh-agent env variables into the current process, if they exist. Otherwise
@@ -66,6 +67,7 @@ function Import-SshAgentEnv([bool] $Force = $false) {
 		$env:SSH_AGENT_ENV_LOADED = '1'
 	}
 }
+Export-ModuleMember -Function Import-SshAgentEnv
 
 function ConvertFrom-NativeSshAgentEnvText($NativeAgentEnv) {
 	foreach ($envLine in $NativeAgentEnv) {
@@ -94,6 +96,7 @@ function ConvertFrom-NativeSshAgentEnvText($NativeAgentEnv) {
 		return $null
 	}
 }
+Export-ModuleMember -Function ConvertFrom-NativeSshAgentEnvText
 
 function Save-SshAgentEnv($AgentEnvAsObject) {
 	$envFilePath = Get-SshAgentEnvFilePath
@@ -101,12 +104,14 @@ function Save-SshAgentEnv($AgentEnvAsObject) {
 	$agentEnvAsString = ConvertTo-Json $AgentEnvAsObject
 	Write-FileUtf8NoBomWithSecurePermissions -FilePath $envFilePath -Contents $agentEnvAsString
 }
+Export-ModuleMember -Function Save-SshAgentEnv
 
 function Clear-SshAgentEnv() {
 	$env:SSH_AUTH_SOCK = $null
 	$env:SSH_AGENT_PID = $null
 	$env:SSH_AGENT_ENV_LOADED = $null
 }
+Export-ModuleMember -Function Clear-SshAgentEnv
 
 function Get-SshAgentPid([bool] $checkProcess = $true) {
 	Import-SshAgentEnv
@@ -126,6 +131,7 @@ function Get-SshAgentPid([bool] $checkProcess = $true) {
 	Clear-SshAgentEnv
 	return $null
 }
+Export-ModuleMember -Function Get-SshAgentPid
 
 function Test-SshAgentPid($agentPid) {
 	$agentProcess = Get-Process -Id $agentPid -ErrorAction SilentlyContinue
@@ -136,6 +142,7 @@ function Test-SshAgentPid($agentPid) {
 
 	return $false
 }
+Export-ModuleMember -Function Test-SshAgentPid
 
 function Get-SshAgentSockFilePath() {
 	$agentPid = Get-SshAgentPid
@@ -147,3 +154,4 @@ function Get-SshAgentSockFilePath() {
 
 	return $env:SSH_AUTH_SOCK
 }
+Export-ModuleMember -Function Get-SshAgentSockFilePath
