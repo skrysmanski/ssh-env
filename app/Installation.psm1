@@ -19,10 +19,9 @@ function Assert-SoftwareInstallation {
 	if (Test-IsWindows) {
 		if ($sshCommand.Source.StartsWith($env:windir, [System.StringComparison]::OrdinalIgnoreCase)) {
 			# Seems we're using Microsoft's SSH port which is (at the moment) not compatible
-			# because it lacks features we're using here.
-
+			# because it lacks features we're using.
 			if ($sshCommand.Version -le '0.0.18.0') {
-				Write-Error "You're using Microsoft's SSH port in a version that's known not to work."
+				Write-Error "You're using Microsoft's SSH port in a version that is known NOT to work."
 			}
 			else {
 				Write-Host -ForegroundColor Yellow "You're using Microsoft's SSH port which may not work."
