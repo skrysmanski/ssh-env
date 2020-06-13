@@ -10,6 +10,7 @@ Import-Module "$PSScriptRoot/SshKey.psm1"
 Import-Module "$PSScriptRoot/SshEnvAppAux.psm1"
 Import-Module "$PSScriptRoot/Installation.psm1"
 Import-Module "$PSScriptRoot/SshDataDir.psm1"
+Import-Module "$PSScriptRoot/SshConfig.psm1"
 
 if ($args.Length -eq 0) {
 	Write-Help 'No command specified'
