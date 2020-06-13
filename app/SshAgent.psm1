@@ -35,6 +35,7 @@ function Get-SshAgentStatus {
 		}
 	}
 }
+Export-ModuleMember -Function Get-SshAgentStatus
 
 #
 # Writes the ssh-agent status to stdout.
@@ -69,6 +70,7 @@ function Write-SshAgentStatus {
 		}
 	}
 }
+Export-ModuleMember -Function Write-SshAgentStatus
 
 #
 # Starts a new ssh-agent instance and stores its env variables on disk.
@@ -133,6 +135,7 @@ function Start-SshAgent {
 		Write-Error "ssh-agent was reported to run under PID $agentPid but we can't find it there."
 	}
 }
+Export-ModuleMember -Function Start-SshAgent
 
 function Stop-SshAgent {
 	$agentStatus = Get-SshAgentStatus
@@ -153,6 +156,7 @@ function Stop-SshAgent {
 		return $false
 	}
 }
+Export-ModuleMember -Function Stop-SshAgent
 
 function Add-SshKeyToRunningAgent([String] $SshPrivateKeyPath, [int] $KeyTimeToLive) {
 	if ($KeyTimeToLive -ne 0) {
@@ -202,3 +206,4 @@ function Assert-SshAgentState([String] $SshPrivateKeyPath) {
 		Stop-SshAgent | Out-Null
 	}
 }
+Export-ModuleMember -Function Assert-SshAgentState
