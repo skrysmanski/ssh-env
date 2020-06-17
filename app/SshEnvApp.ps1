@@ -24,15 +24,20 @@ function Invoke-SshWithAgent {
 	$privateKeyPath = Get-SshPrivateKeyPath
 	Assert-SshAgentState -SshPrivateKeyPath $privateKeyPath
 
-	$sshCommand = Get-Command 'ssh'
-	Write-Host -ForegroundColor DarkGray "Using ssh from: $($sshCommand.Source)"
+	$sshEnvCommands = Get-SshEnvCommands
+	Write-Host -ForegroundColor DarkGray "Using ssh from: $($sshEnvCommands.Ssh)"
 
-	& $sshCommand.Source -F $sshConfigPath @args
+	& $sshEnvCommands.Ssh -F $sshConfigPath @args
 }
 
 function Invoke-SshEnvApp {
 	# Make sure everything is installed properly.
-	Assert-SoftwareInstallation
+	$sshEnvCommands = Get-SshEnvCommands
+
+	if (Test-IsMicrosoftSsh) {
+		# For bugs, see: https://github.com/PowerShell/Win32-OpenSSH/issues/
+		Write-Host -ForegroundColor Yellow "Using Microsoft's SSH implementation (some things may not work as expected)"
+	}
 
 	Assert-AppDirectoriesAreEncrypted
 	Assert-CorrectSshKeyPermissions
@@ -51,12 +56,19 @@ function Invoke-SshEnvApp {
 				}
 
 				'stop' {
-					$stopped = Stop-SshAgent
-					if ($stopped) {
-						Write-Host 'ssh-agent: stopped'
+					if (Test-IsMicrosoftSsh) {
+						# With Microsoft's SSH, we don't really stop the ssh-agent as it's a service.
+						# Instead we just remove the loaded key.
+						Stop-SshAgent | Out-Null
 					}
 					else {
-						Write-Host 'ssh-agent: not running'
+						$stopped = Stop-SshAgent
+						if ($stopped) {
+							Write-Host 'ssh-agent: stopped'
+						}
+						else {
+							Write-Host 'ssh-agent: not running'
+						}
 					}
 					break
 				}
@@ -190,11 +202,9 @@ function Invoke-SshEnvApp {
 			$version = Get-EnvVersion
 			Write-Host "ssh-env version $version"
 
-			& ssh -V
+			& $sshEnvCommands.Ssh -V
 
-			$sshCommand = Get-Command 'ssh'
-			$sshBinariesPath = Split-Path $sshCommand.Source -Parent
-			Write-Host -ForegroundColor DarkGray "Using SSH binaries from: $sshBinariesPath"
+			Write-Host -ForegroundColor DarkGray "Using SSH binaries from: $([IO.Path]::GetDirectoryName($sshEnvCommands.Ssh))"
 			break
 		}
 

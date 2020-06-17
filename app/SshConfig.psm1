@@ -1,6 +1,7 @@
 # Stop on every error
 $script:ErrorActionPreference = 'Stop'
 
+Import-Module "$PSScriptRoot/Installation.psm1"
 Import-Module "$PSScriptRoot/SshEnvPaths.psm1"
 Import-Module "$PSScriptRoot/SshEnvConf.psm1"
 Import-Module "$PSScriptRoot/SshAgentConf.psm1"
@@ -86,13 +87,21 @@ function Get-RuntimeSshConfig {
 			Start-SshAgent
 		}
 
-		$sshAgentSockFilePath = Get-SshAgentSockFilePath
-		if (-Not $sshAgentSockFilePath) {
-			throw 'Could not determine ssh-agent auth sock path.'
+		if (Test-IsMicrosoftSsh) {
+			$identityAgentDeclaration = "# not required by Microsoft's SSH implementation"
+		}
+		else {
+			$sshAgentSockFilePath = Get-SshAgentSockFilePath
+
+			if (-Not $sshAgentSockFilePath) {
+				throw 'Could not determine ssh-agent auth sock path.'
+			}
+
+			$identityAgentDeclaration = "IdentityAgent $sshAgentSockFilePath"
 		}
 	}
 	else {
-		$sshAgentSockFilePath = 'none'
+		$identityAgentDeclaration = 'IdentityAgent none'
 	}
 
 	$sshEnvPath = Get-SshEnvPath -CreateIfNotExists $false
@@ -119,7 +128,7 @@ IdentityFile $privateKeyPath
 
 # By specifying this, the ssh-agent of ssh-env can be used by other processes
 # by just referencing this config file.
-IdentityAgent $sshAgentSockFilePath
+$identityAgentDeclaration
 
 # Prevents ssh from adding the SSH key to the ssh-agent.
 # NOTE: We set this to 'no' because there's no way to configure the

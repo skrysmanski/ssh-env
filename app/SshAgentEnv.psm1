@@ -4,6 +4,10 @@ $script:ErrorActionPreference = 'Stop'
 Import-Module "$PSScriptRoot/SshEnvPaths.psm1"
 
 function Get-SshAgentEnvFilePath([bool] $OldFile = $false) {
+	if (Test-IsMicrosoftSsh) {
+		throw "Not supported with Microsoft' SSH implementation."
+	}
+
 	$localDataPath = Get-SshLocalDataPath
 	if (-Not $OldFile) {
 		return Join-Path $localDataPath 'ssh-agent-env.json'
@@ -19,6 +23,10 @@ Export-ModuleMember -Function Get-SshAgentEnvFilePath
 # nothing happens.
 #
 function Import-SshAgentEnv([bool] $Force = $false) {
+	if (Test-IsMicrosoftSsh) {
+		throw "Not supported with Microsoft' SSH implementation."
+	}
+
 	if (($env:SSH_AGENT_ENV_LOADED -eq '1') -and (-Not $Force)) {
 		# Already loaded and no force reload.
 		return
@@ -99,6 +107,10 @@ function ConvertFrom-NativeSshAgentEnvText($NativeAgentEnv) {
 Export-ModuleMember -Function ConvertFrom-NativeSshAgentEnvText
 
 function Save-SshAgentEnv($AgentEnvAsObject) {
+	if (Test-IsMicrosoftSsh) {
+		throw "Not supported with Microsoft' SSH implementation."
+	}
+
 	$envFilePath = Get-SshAgentEnvFilePath
 
 	$agentEnvAsString = ConvertTo-Json $AgentEnvAsObject
@@ -114,6 +126,11 @@ function Clear-SshAgentEnv() {
 Export-ModuleMember -Function Clear-SshAgentEnv
 
 function Get-SshAgentPid([bool] $checkProcess = $true) {
+	if (Test-IsMicrosoftSsh) {
+		# There's no good way of getting the PID of a service. So we don't support this.
+		throw "Not supported with Microsoft' SSH implementation."
+	}
+
 	Import-SshAgentEnv
 
 	$agentPid = $env:SSH_AGENT_PID
@@ -145,6 +162,10 @@ function Test-SshAgentPid($agentPid) {
 Export-ModuleMember -Function Test-SshAgentPid
 
 function Get-SshAgentSockFilePath() {
+	if (Test-IsMicrosoftSsh) {
+		throw "ssh-agent sock files are not used with Microsoft's SSH implementation."
+	}
+
 	$agentPid = Get-SshAgentPid
 
 	if (-Not $agentPid) {
