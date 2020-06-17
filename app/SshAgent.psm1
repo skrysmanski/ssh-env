@@ -154,9 +154,31 @@ Export-ModuleMember -Function Start-SshAgent
 
 function Stop-SshAgent {
 	$agentStatus = Get-SshAgentStatus
-	$agentPid = Get-SshAgentPid
+	if ($agentStatus -eq [SshAgentStatus]::NotRunning) {
+		return $false
+	}
 
-	if (($agentStatus -ne [SshAgentStatus]::NotRunning) -And ($agentPid)) {
+	if (Test-IsMicrosoftSsh) {
+		if ($agentStatus -eq [SshAgentStatus]::RunningWithoutKey) {
+			# No key is loaded.
+			return $false
+		}
+
+		$privateKeyPath = Get-SshPrivateKeyPath
+		$sshEnvCommands = Get-SshEnvCommands
+
+		# With Microsoft's SSH, we don't really stop the ssh-agent as it's a service.
+		# Instead we just remove the loaded key.
+		& $sshEnvCommands.SshAdd -d $privateKeyPath
+
+		return $true
+	}
+	else {
+		$agentPid = Get-SshAgentPid
+		if (!$agentPid) {
+			return $false
+		}
+
 		Write-Host "Stopping ssh-agent process (pid: $agentPid)"
 		Stop-Process -Id $agentPid
 
@@ -166,9 +188,6 @@ function Stop-SshAgent {
 		Clear-SshAgentEnv
 
 		return $true
-	}
-	else {
-		return $false
 	}
 }
 Export-ModuleMember -Function Stop-SshAgent

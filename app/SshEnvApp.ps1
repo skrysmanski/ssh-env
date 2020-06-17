@@ -56,12 +56,19 @@ function Invoke-SshEnvApp {
 				}
 
 				'stop' {
-					$stopped = Stop-SshAgent
-					if ($stopped) {
-						Write-Host 'ssh-agent: stopped'
+					if (Test-IsMicrosoftSsh) {
+						# With Microsoft's SSH, we don't really stop the ssh-agent as it's a service.
+						# Instead we just remove the loaded key.
+						Stop-SshAgent | Out-Null
 					}
 					else {
-						Write-Host 'ssh-agent: not running'
+						$stopped = Stop-SshAgent
+						if ($stopped) {
+							Write-Host 'ssh-agent: stopped'
+						}
+						else {
+							Write-Host 'ssh-agent: not running'
+						}
 					}
 					break
 				}
