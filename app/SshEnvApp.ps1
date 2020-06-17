@@ -6,6 +6,7 @@ $script:ErrorActionPreference = 'Stop'
 Import-Module "$PSScriptRoot/SshEnvPaths.psm1"
 Import-Module "$PSScriptRoot/SshEnvConf.psm1"
 Import-Module "$PSScriptRoot/SshAgent.psm1"
+Import-Module "$PSScriptRoot/SshAgentConf.psm1"
 Import-Module "$PSScriptRoot/SshKey.psm1"
 Import-Module "$PSScriptRoot/SshEnvAppAux.psm1"
 Import-Module "$PSScriptRoot/Installation.psm1"
