@@ -19,6 +19,11 @@ Export-ModuleMember -Function Get-SshAgentEnvFilePath
 # nothing happens.
 #
 function Import-SshAgentEnv([bool] $Force = $false) {
+	if (Test-IsMicrosoftSsh) {
+		# Not needed
+		return
+	}
+
 	if (($env:SSH_AGENT_ENV_LOADED -eq '1') -and (-Not $Force)) {
 		# Already loaded and no force reload.
 		return
@@ -145,6 +150,10 @@ function Test-SshAgentPid($agentPid) {
 Export-ModuleMember -Function Test-SshAgentPid
 
 function Get-SshAgentSockFilePath() {
+	if (Test-IsMicrosoftSsh) {
+		throw "ssh-agent sock files are not used with Microsoft's SSH implementation."
+	}
+
 	$agentPid = Get-SshAgentPid
 
 	if (-Not $agentPid) {

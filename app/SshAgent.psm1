@@ -17,23 +17,36 @@ Enum SshAgentStatus {
 #
 function Get-SshAgentStatus {
 	$sshEnvCommands = Get-SshEnvCommands
-	$sshAgentPid = Get-SshAgentPid
+	if (Test-IsMicrosoftSsh) {
+		$sshAgentService = Get-Service 'ssh-agent'
 
-	if (-Not $sshAgentPid) {
-		# On macOS it's possible to have "SSH_AUTH_SOCK" but not "SSH_AGENT_PID". This happens because there's always
-		# a (global) ssh-agent running. However, we don't want to add keys to this agent but to our own (this is a little
-		# bit more secure because the agent is not that easily accessible).
-		return [SshAgentStatus]::NotRunning
-	}
-	else {
-		# agent_run_state: 0=agent running w/ key; 1=agent w/o key; 2=agent not running
-		try {
+		if ($sshAgentService.Status -eq 'Running') {
 			& $sshEnvCommands.SshAdd -l 2>&1 | Out-Null
 			return [SshAgentStatus]$LASTEXITCODE
 		}
-		catch {
-			# Ignore - we get this when no agent is running.
+		else {
 			return [SshAgentStatus]::NotRunning
+		}
+	}
+	else {
+		$sshAgentPid = Get-SshAgentPid
+
+		if (-Not $sshAgentPid) {
+			# On macOS it's possible to have "SSH_AUTH_SOCK" but not "SSH_AGENT_PID". This happens because there's always
+			# a (global) ssh-agent running. However, we don't want to add keys to this agent but to our own (this is a little
+			# bit more secure because the agent is not that easily accessible).
+			return [SshAgentStatus]::NotRunning
+		}
+		else {
+			# agent_run_state: 0=agent running w/ key; 1=agent w/o key; 2=agent not running
+			try {
+				& $sshEnvCommands.SshAdd -l 2>&1 | Out-Null
+				return [SshAgentStatus]$LASTEXITCODE
+			}
+			catch {
+				# Ignore - we get this when no agent is running.
+				return [SshAgentStatus]::NotRunning
+			}
 		}
 	}
 }
@@ -168,12 +181,19 @@ function Add-SshKeyToRunningAgent([String] $SshPrivateKeyPath, [int] $KeyTimeToL
 		& $sshEnvCommands.SshAdd -t $KeyTimeToLive "$SshPrivateKeyPath"
 	}
 	else {
-		# Add key indefinitely (until the agent is stopped)
+		# Add key indefinitely (until the agent is stopped, indefinitely with Microsoft SSH)
 		& $sshEnvCommands.SshAdd "$SshPrivateKeyPath"
 	}
 
 	if (-Not $?) {
-		throw 'ssh-add failed'
+		if (Test-IsMicrosoftSsh -and ($KeyTimeToLive -ne 0)) {
+			# See: https://github.com/PowerShell/Win32-OpenSSH/issues/1510
+			# See: https://github.com/PowerShell/Win32-OpenSSH/issues/1056
+			Write-Error "Microsoft's ssh-agent implementation doesn't support limiting the lifetime of stored keys."
+		}
+		else {
+			throw 'ssh-add failed'
+		}
 	}
 }
 
