@@ -1,6 +1,7 @@
 # Stop on every error
 $script:ErrorActionPreference = 'Stop'
 
+Import-Module "$PSScriptRoot/Installation.psm1"
 Import-Module "$PSScriptRoot/Utils.psm1"
 Import-Module "$PSScriptRoot/SshAgentConf.psm1"
 Import-Module "$PSScriptRoot/SshAgentEnv.psm1"
@@ -15,6 +16,7 @@ Enum SshAgentStatus {
 # Returns the status of the ssh-agent.
 #
 function Get-SshAgentStatus {
+	$sshEnvCommands = Get-SshEnvCommands
 	$sshAgentPid = Get-SshAgentPid
 
 	if (-Not $sshAgentPid) {
@@ -26,7 +28,7 @@ function Get-SshAgentStatus {
 	else {
 		# agent_run_state: 0=agent running w/ key; 1=agent w/o key; 2=agent not running
 		try {
-			& ssh-add -l 2>&1 | Out-Null
+			& $sshEnvCommands.SshAdd -l 2>&1 | Out-Null
 			return [SshAgentStatus]$LASTEXITCODE
 		}
 		catch {
@@ -76,9 +78,9 @@ Export-ModuleMember -Function Write-SshAgentStatus
 # Starts a new ssh-agent instance and stores its env variables on disk.
 #
 function Start-SshAgent {
-	$sshAgentCommand = Get-Command 'ssh-agent'
+	$sshEnvCommands = Get-SshEnvCommands
 
-	Write-Host -ForegroundColor DarkGray "Starting new ssh-agent instance from: $($sshAgentCommand.Source)"
+	Write-Host -ForegroundColor DarkGray "Starting new ssh-agent instance from: $($sshEnvCommands.SshAgent)"
 
 	# Starts the new agent instance and prints its env variables on stdout
 	# -c creates the output in "C-shell commands" which is easier to parse
@@ -88,7 +90,7 @@ function Start-SshAgent {
 	#   in the background - and then exit after it has written the info about the second
 	#   process to stdout. Thus, we can't use the PID of this command to find the
 	#   background process.
-	$agentEnvAsString = & $sshAgentCommand.Source -c
+	$agentEnvAsString = & $sshEnvCommands.SshAgent -c
 
 	if (-Not $?) {
 		throw "'ssh-agent -c' failed."
@@ -159,13 +161,15 @@ function Stop-SshAgent {
 Export-ModuleMember -Function Stop-SshAgent
 
 function Add-SshKeyToRunningAgent([String] $SshPrivateKeyPath, [int] $KeyTimeToLive) {
+	$sshEnvCommands = Get-SshEnvCommands
+
 	if ($KeyTimeToLive -ne 0) {
 		# Add key for a limited time only
-		& ssh-add -t $KeyTimeToLive "$SshPrivateKeyPath"
+		& $sshEnvCommands.SshAdd -t $KeyTimeToLive "$SshPrivateKeyPath"
 	}
 	else {
 		# Add key indefinitely (until the agent is stopped)
-		& ssh-add "$SshPrivateKeyPath"
+		& $sshEnvCommands.SshAdd "$SshPrivateKeyPath"
 	}
 
 	if (-Not $?) {

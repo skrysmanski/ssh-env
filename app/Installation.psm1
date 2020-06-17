@@ -3,6 +3,45 @@ $script:ErrorActionPreference = 'Stop'
 
 Import-Module "$PSScriptRoot/Utils.psm1"
 
+function Get-SshEnvCommands() {
+	if ($script:SshEnvCommands) {
+		return $script:SshEnvCommands
+	}
+
+	$checkedLocations = @()
+
+	$sshCommand = Get-Command 'ssh' -ErrorAction SilentlyContinue
+	if ($sshCommand) {
+		$sshEnvCommands = GetSshEnvCommandsIfExist $sshCommand.Source
+		if ($sshEnvCommands) {
+			$script:SshEnvCommands = $sshEnvCommands
+			return $sshEnvCommands
+		}
+
+		$checkedLocations += $sshCommand.Source
+	}
+
+	if (Test-IsWindows) {
+		$sshCommands = GetSshExecutablesFromGitForWindows
+		foreach ($sshCommand in $sshCommands) {
+			$sshEnvCommands = GetSshEnvCommandsIfExist $sshCommand
+			if ($sshEnvCommands) {
+				$script:SshEnvCommands = $sshEnvCommands
+				return $sshEnvCommands
+			}
+			$checkedLocations += $sshCommand
+		}
+	}
+
+	if ($checkedLocations.Count -eq 0) {
+		Write-Error 'Could not locate "ssh" executable.'
+	}
+	else {
+		Write-Error "Could not locate full SSH installation (but found the ssh executable in: $([string]::Join(', ', $checkedLocations)))."
+	}
+}
+Export-ModuleMember -Function Get-SshEnvCommands
+
 function Get-GitCommand() {
 	$command = Get-Command 'git' -ErrorAction SilentlyContinue
 	if (-Not $command) {
@@ -13,99 +52,64 @@ function Get-GitCommand() {
 }
 Export-ModuleMember -Function Get-GitCommand
 
-function Assert-SoftwareInstallation {
-	$sshCommand = Get-Command 'ssh' -ErrorAction SilentlyContinue
-	if ((-Not $sshCommand) -And (Test-IsWindows)) {
-		$sshBinariesPath = Get-SshBinariesPathOnWindows
-		if ($sshBinariesPath) {
-			$env:Path += ";$sshBinariesPath"
-			$sshCommand = Get-Command 'ssh' -ErrorAction SilentlyContinue
-		}
-	}
-	if (-Not $sshCommand) {
-		Write-Error 'ssh is not installed or not on the PATH variable.'
-	}
+function GetSshExecutablesFromGitForWindows() {
+	$allCommands = @()
 
-	if (Test-IsWindows) {
-		if ($sshCommand.Source.StartsWith($env:windir, [System.StringComparison]::OrdinalIgnoreCase)) {
-			# Seems we're using Microsoft's SSH port which is (at the moment) not compatible
-			# because it lacks features we're using.
-			if ($sshCommand.Version -le '0.0.18.0') {
-				Write-Error "You're using Microsoft's SSH port in a version that is known NOT to work."
-			}
-			else {
-				Write-Host -ForegroundColor Yellow "You're using Microsoft's SSH port which may not work."
-			}
-		}
-	}
-
-	$requiredBinaries = Get-RequiredSshBinaries
-
-	foreach ($binaryName in $requiredBinaries) {
-		if ($binaryName -eq 'ssh') {
-			# We've already tested this one.
-			continue
-		}
-
-		$command = Get-Command $binaryName -ErrorAction SilentlyContinue
-		if (-Not $command) {
-			Write-Error "Could not find required program: $binaryName."
-		}
-	}
-}
-Export-ModuleMember -Function Assert-SoftwareInstallation
-
-#
-# Returns the SSH programs used by ssh-env (as a list).
-#
-function Get-RequiredSshBinaries {
-	return @(
-		'ssh',
-		'ssh-agent',
-		'ssh-add',
-		'ssh-keygen'
-	)
-}
-
-function Get-SshBinariesPathOnWindows {
 	# Check default installation folder of "Git for Windows"
-	if (Test-SshBinariesExist "$env:ProgramFiles\Git\usr\bin") {
-		return "$env:ProgramFiles\Git\usr\bin"
+	$sshCommand = GetBinaryPathIfExists "$env:ProgramFiles\Git\usr\bin" 'ssh'
+	if ($sshCommand) {
+		$allCommands += $sshCommand
 	}
 
 	$gitCommand = Get-Command 'git' -ErrorAction SilentlyContinue
 	if ($gitCommand) {
 		# Test different "Git for Windows" installation folder;
 		# e.g.: D:\Programs\Git\cmd\git.exe
-		$suspectedPath = "$($gitCommand.Source)\..\..\usr\bin"
-		if (Test-SshBinariesExist $suspectedPath) {
-			return Resolve-Path $suspectedPath
+		$sshCommand = GetBinaryPathIfExists "$($gitCommand.Source)\..\..\usr\bin" 'ssh'
+		if ($sshCommand) {
+			$allCommands += $sshCommand
 		}
 	}
 
-	return $null
+	return $allCommands
 }
 
-#
-# Checks whether the specified path contains an SSH installation (or to
-# be more specific: all SSH programs required by ssh-env).
-#
-function Test-SshBinariesExist([string] $suspectedPath) {
-	if (-Not (Test-Path $suspectedPath -PathType Container)) {
+function GetSshEnvCommandsIfExist([string] $SshCommand) {
+	$binDir = [IO.Path]::GetDirectoryName($SshCommand)
+
+	$sshAgentCommand = GetBinaryPathIfExists $BinDir 'ssh-agent'
+	if (!$sshAgentCommand) {
 		return $false
 	}
 
-	$requiredBinaries = Get-RequiredSshBinaries
-	foreach ($binaryName in $requiredBinaries) {
-		$binaryPath = Join-Path $suspectedPath $binaryName
-		if (Test-IsWindows) {
-			$binaryPath += '.exe'
-		}
-
-		if (-Not (Test-Path $binaryPath -PathType Leaf)) {
-			return $false
-		}
+	$sshAddCommand = GetBinaryPathIfExists $BinDir 'ssh-add'
+	if (!$sshAddCommand) {
+		return $false
 	}
 
-	return $true
+	$sshKeyGenCommand = GetBinaryPathIfExists $BinDir 'ssh-keygen'
+	if (!$sshKeyGenCommand) {
+		return $false
+	}
+
+	return @{
+		Ssh       = $SshCommand
+		SshAgent  = $sshAgentCommand
+		SshAdd    = $sshAddCommand
+		SshKeyGen = $sshKeyGenCommand
+	}
+}
+
+function GetBinaryPathIfExists([string] $BinDir, [string] $BinaryName) {
+	$binaryPath = Join-Path $BinDir $BinaryName
+
+	if (Test-IsWindows) {
+		$binaryPath += '.exe'
+	}
+
+	if (-Not (Test-Path $binaryPath -PathType Leaf)) {
+		return $false
+	}
+
+	return [IO.Path]::GetFullPath($binaryPath)
 }

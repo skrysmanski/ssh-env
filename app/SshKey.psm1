@@ -1,10 +1,13 @@
 # Stop on every error
 $script:ErrorActionPreference = 'Stop'
 
+Import-Module "$PSScriptRoot/Installation.psm1"
 Import-Module "$PSScriptRoot/Utils.psm1"
 Import-Module "$PSScriptRoot/SshConfig.psm1"
 
 function New-SshKey {
+	$sshEnvCommands = Get-SshEnvCommands
+
 	# Request the user's name from the user. Note this is actually just
 	# a comment and is copied over to the target system when running
 	# "install-key". There it is then used to make it easier to differentiate
@@ -21,7 +24,7 @@ function New-SshKey {
 	# -C : add comment to generated certificate
 	# -f : output file
 	# See also: http://www.manpagez.com/man/1/ssh-keygen/
-	& ssh-keygen -o -t rsa -b 4096 -C "$certName" -f "$sshPrivateKeyPath"
+	& $sshEnvCommands.SshKeyGen -o -t rsa -b 4096 -C "$certName" -f "$sshPrivateKeyPath"
 	if (-Not $?) {
 		Write-Error 'ssh-keygen failed'
 	}
@@ -31,6 +34,8 @@ function New-SshKey {
 Export-ModuleMember -Function New-SshKey
 
 function Install-SshKey([String] $SshTarget) {
+	$sshEnvCommands = Get-SshEnvCommands
+
 	$sshConfigPath = Assert-SshConfigIsUpToDate
 
 	$sshPublicKeyPath = Get-SshPublicKeyPath
@@ -59,11 +64,13 @@ function Install-SshKey([String] $SshTarget) {
 	# For some guidance on this command see:
 	# * http://askubuntu.com/a/6186/62255
 	# * https://github.com/openssh/openssh-portable/blob/master/contrib/ssh-copy-id
-	$publicKey | & ssh -F $sshConfigPath -o 'PreferredAuthentications keyboard-interactive,password' -p $port $SshTarget "exec sh -c 'cd ; umask 077 ; mkdir -p .ssh && cat >> .ssh/authorized_keys || exit 1'"
+	$publicKey | & $sshEnvCommands.Ssh -F $sshConfigPath -o 'PreferredAuthentications keyboard-interactive,password' -p $port $SshTarget "exec sh -c 'cd ; umask 077 ; mkdir -p .ssh && cat >> .ssh/authorized_keys || exit 1'"
 }
 Export-ModuleMember -Function Install-SshKey
 
 function Write-SshKeyEncryptionStateToHost {
+	$sshEnvCommands = Get-SshEnvCommands
+
 	$sshPrivateKeyPath = Get-SshPrivateKeyPath
 
 	if (-Not (Test-Path $sshPrivateKeyPath)) {
@@ -73,7 +80,7 @@ function Write-SshKeyEncryptionStateToHost {
 
 	Write-Host -NoNewline 'Encryption: '
 	try {
-		& ssh-keygen -p -P [String]::Empty -N [String]::Empty -f $sshPrivateKeyPath 2>&1 | Out-Null
+		& $sshEnvCommands.SshKeyGen -p -P [String]::Empty -N [String]::Empty -f $sshPrivateKeyPath 2>&1 | Out-Null
 	}
 	catch {
 		# Ignore errors - they're expected if the key is encrypted

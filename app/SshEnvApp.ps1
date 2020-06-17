@@ -24,15 +24,15 @@ function Invoke-SshWithAgent {
 	$privateKeyPath = Get-SshPrivateKeyPath
 	Assert-SshAgentState -SshPrivateKeyPath $privateKeyPath
 
-	$sshCommand = Get-Command 'ssh'
-	Write-Host -ForegroundColor DarkGray "Using ssh from: $($sshCommand.Source)"
+	$sshEnvCommands = Get-SshEnvCommands
+	Write-Host -ForegroundColor DarkGray "Using ssh from: $($sshEnvCommands.Ssh)"
 
-	& $sshCommand.Source -F $sshConfigPath @args
+	& $sshEnvCommands.Ssh -F $sshConfigPath @args
 }
 
 function Invoke-SshEnvApp {
 	# Make sure everything is installed properly.
-	Assert-SoftwareInstallation
+	$sshEnvCommands = Get-SshEnvCommands
 
 	Assert-AppDirectoriesAreEncrypted
 	Assert-CorrectSshKeyPermissions
@@ -190,11 +190,9 @@ function Invoke-SshEnvApp {
 			$version = Get-EnvVersion
 			Write-Host "ssh-env version $version"
 
-			& ssh -V
+			& $sshEnvCommands.Ssh -V
 
-			$sshCommand = Get-Command 'ssh'
-			$sshBinariesPath = Split-Path $sshCommand.Source -Parent
-			Write-Host -ForegroundColor DarkGray "Using SSH binaries from: $sshBinariesPath"
+			Write-Host -ForegroundColor DarkGray "Using SSH binaries from: $([IO.Path]::GetDirectoryName($sshEnvCommands.Ssh))"
 			break
 		}
 
