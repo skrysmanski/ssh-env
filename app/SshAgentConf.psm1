@@ -13,6 +13,8 @@ function Get-SshAgentConfigFilePath {
 function Initialize-SshAgentConfig {
 	$DEFAULT_KEY_TTL = 10
 
+	$sshEnvCommands = Get-SshEnvCommands
+
 	$useSshAgent = Read-YesNoPrompt 'Do you want to use ssh-agent?' -DefaultValue $true
 
 	if ($useSshAgent -eq 'y') {
@@ -41,8 +43,9 @@ function Initialize-SshAgentConfig {
 	}
 
 	$data = @{
-		useSshAgent = $useSshAgent
-		keyTimeToLive = $keyTimeToLive
+		UseSshAgent = $useSshAgent
+		KeyTimeToLive = $keyTimeToLive
+		ConfiguredSsh = $sshEnvCommands.Ssh
 	}
 
 	$configFileContents = $data | ConvertTo-Json
@@ -54,6 +57,8 @@ function Initialize-SshAgentConfig {
 	Write-Host -NoNewline 'SSH agent config file created at: '
 	Write-Host -ForegroundColor Green $configFilePath
 	Write-Host
+
+	return $data
 }
 Export-ModuleMember -Function Initialize-SshAgentConfig
 
@@ -66,13 +71,30 @@ function Get-SshAgentConfig([switch] $CreateIfNotExists) {
 			Write-Host -ForegroundColor Green -NoNewline $configFilePath
 			Write-Host " doesn't exist. Creating it."
 			Write-Host
-			Initialize-SshAgentConfig
+			return Initialize-SshAgentConfig
 		}
 		else {
 			return $null
 		}
 	}
 
-	return Get-Content $configFilePath -Encoding 'utf8' -Raw | ConvertFrom-Json
+	$sshEnvCommands = Get-SshEnvCommands
+
+	$config = Get-Content $configFilePath -Encoding 'utf8' -Raw | ConvertFrom-Json
+
+	if ($config.ConfiguredSsh -ne $sshEnvCommands.Ssh) {
+		if ($CreateIfNotExists) {
+			Write-Host
+			Write-Host -ForegroundColor Green -NoNewline $configFilePath
+			Write-Host " is configured for a different SSH implementation. Recreating it."
+			Write-Host
+			return Initialize-SshAgentConfig
+		}
+		else {
+			return $null
+		}
+	}
+
+	return $config
 }
 Export-ModuleMember -Function Get-SshAgentConfig

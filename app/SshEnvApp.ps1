@@ -51,7 +51,7 @@ function Invoke-SshEnvApp {
 				}
 
 				'config' {
-					Initialize-SshAgentConfig
+					Initialize-SshAgentConfig | Out-Null
 					break
 				}
 
