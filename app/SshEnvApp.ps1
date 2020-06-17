@@ -34,6 +34,11 @@ function Invoke-SshEnvApp {
 	# Make sure everything is installed properly.
 	$sshEnvCommands = Get-SshEnvCommands
 
+	if (Test-IsMicrosoftSsh) {
+		# For bugs, see: https://github.com/PowerShell/Win32-OpenSSH/issues/
+		Write-Host -ForegroundColor Yellow "Using Microsoft's SSH implementation (some things may not work)"
+	}
+
 	Assert-AppDirectoriesAreEncrypted
 	Assert-CorrectSshKeyPermissions
 
