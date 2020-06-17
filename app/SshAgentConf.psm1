@@ -1,6 +1,7 @@
 # Stop on every error
 $script:ErrorActionPreference = 'Stop'
 
+Import-Module "$PSScriptRoot/Installation.psm1"
 Import-Module "$PSScriptRoot/SshEnvPaths.psm1"
 Import-Module "$PSScriptRoot/Utils.psm1"
 
@@ -17,7 +18,21 @@ function Initialize-SshAgentConfig {
 	if ($useSshAgent -eq 'y') {
 		$useSshAgent = $true
 
-		$keyTimeToLive = Read-IntegerPrompt "How long should the private key be kept in memory (seconds; 0 = forever)" -DefaultValue $DEFAULT_KEY_TTL
+		if (Test-IsMicrosoftSsh) {
+			# Microsoft SSH-agent implementation doesn't support time-to-live for SSH keys.
+			# See: https://github.com/PowerShell/Win32-OpenSSH/issues/1510
+			# See: https://github.com/PowerShell/Win32-OpenSSH/issues/1056
+			$confirm = Read-YesNoPrompt "Microsoft's ssh-agent implementation stores private keys indefinitely (even through a reboot). Do you still want to use ssh-agent?"
+			if ($confirm) {
+				$keyTimeToLive = 0
+			}
+			else {
+				Write-Error 'Aborting'
+			}
+		}
+		else {
+			$keyTimeToLive = Read-IntegerPrompt "How long should the private key be kept in memory (seconds; 0 = forever)" -DefaultValue $DEFAULT_KEY_TTL
+		}
 	}
 	else {
 		$useSshAgent = $false
