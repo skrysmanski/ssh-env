@@ -50,7 +50,7 @@ function Initialize-DataDirViaGitClone {
 
 	Write-Host
 	Write-Host -NoNewline 'Cloning SSH data repository: '
-	Write-Host -ForegroundColor Green 'sucess'
+	Write-Host -ForegroundColor Green 'success'
 	Write-Host
 }
 Export-ModuleMember -Function Initialize-DataDirViaGitClone

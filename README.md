@@ -131,7 +131,7 @@ Initialized empty Git repository in /Users/manski/ssh-env/ssh-data/.git/
  create mode 100644 id_rsa.pub
  create mode 100644 known_hosts
 
-Creating SSH data folder: sucess
+Creating SSH data folder: success
 ```
 
 **Note:** If you already have an SSH key pair, you can use it. See [Importing an Existing SSH Key Pair](#importing-an-existing-ssh-key-pair) below.
