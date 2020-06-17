@@ -62,15 +62,27 @@ function Write-SshAgentStatus {
 	switch ($agentStatus) {
 		RunningWithKey {
 			Write-Host -NoNewline -ForegroundColor Green 'running (keys loaded)'
-			$sshAgentPid = Get-SshAgentPid
-			Write-Host -ForegroundColor DarkGray " [PID: $sshAgentPid]"
+			if (Test-IsMicrosoftSsh) {
+				$sshAgentService = Get-Service 'ssh-agent'
+				Write-Host -ForegroundColor DarkGray " [service: $($sshAgentService.DisplayName)]"
+			}
+			else {
+				$sshAgentPid = Get-SshAgentPid
+				Write-Host -ForegroundColor DarkGray " [PID: $sshAgentPid]"
+			}
 			break
 		}
 
 		RunningWithoutKey {
 			Write-Host -NoNewline -ForegroundColor Green 'running (no keys loaded)'
-			$sshAgentPid = Get-SshAgentPid
-			Write-Host -ForegroundColor DarkGray " [PID: $sshAgentPid]"
+			if (Test-IsMicrosoftSsh) {
+				$sshAgentService = Get-Service 'ssh-agent'
+				Write-Host -ForegroundColor DarkGray " [service: $($sshAgentService.DisplayName)]"
+			}
+			else {
+				$sshAgentPid = Get-SshAgentPid
+				Write-Host -ForegroundColor DarkGray " [PID: $sshAgentPid]"
+			}
 			break
 		}
 
@@ -93,61 +105,74 @@ Export-ModuleMember -Function Write-SshAgentStatus
 function Start-SshAgent {
 	$sshEnvCommands = Get-SshEnvCommands
 
-	Write-Host -ForegroundColor DarkGray "Starting new ssh-agent instance from: $($sshEnvCommands.SshAgent)"
+	if (Test-IsMicrosoftSsh) {
+		Write-Host -ForegroundColor DarkGray "Starting ssh-agent via: $($sshEnvCommands.SshAgent)"
 
-	# Starts the new agent instance and prints its env variables on stdout
-	# -c creates the output in "C-shell commands" which is easier to parse
-	# than "Bourne shell commands" (which would be -s and the default most of the time).
-	#
-	# NOTE: The process being started here will actually start a second ssh-agent process
-	#   in the background - and then exit after it has written the info about the second
-	#   process to stdout. Thus, we can't use the PID of this command to find the
-	#   background process.
-	$agentEnvAsString = & $sshEnvCommands.SshAgent -c
+		& $sshEnvCommands.SshAgent
 
-	if (-Not $?) {
-		throw "'ssh-agent -c' failed."
-	}
-
-	if (-Not $agentEnvAsString) {
-		throw "'ssh-agent -c' didn't return any configuration"
-	}
-
-	$agentEnv = ConvertFrom-NativeSshAgentEnvText $agentEnvAsString
-	if (-Not $agentEnv) {
-		Write-Error "The process 'ssh-agent' could be started but it didn't provide all the necessary information."
-	}
-
-	if (Test-IsWindows -And -Not (Test-SshAgentPid $agentEnv.SshAgentPid)) {
-		# Workaround for ssh on Windows that's compiled against Cygwin which then uses different
-		# PIDs for the "Linux" and the "Windows" part.
-		# See: https://github.com/git-for-windows/git/issues/2274
-		try {
-			$winPidAsString = & cat.exe "/proc/$($agentEnv.SshAgentPid)/winpid" 2>&1
-		}
-		catch {
-			$winPidAsString = $null
+		if (-Not $?) {
+			throw "'ssh-agent' failed."
 		}
 
-		if (![string]::IsNullOrWhiteSpace($winPidAsString)) {
-			$winPid = 0
-			if ([int]::TryParse($winPidAsString, [ref]$winPid)) {
-				$agentEnv.SshAgentPid = $winPid
-			}
-		}
-	}
-
-	Save-SshAgentEnv $agentEnv
-
-	Import-SshAgentEnv -Force $true
-
-	$effectiveAgentPid = Get-SshAgentPid
-	if ($effectiveAgentPid) {
-		Write-Host -ForegroundColor DarkGray "ssh-agent now running under PID $effectiveAgentPid"
+		Write-Host -ForegroundColor DarkGray "ssh-agent now running as service"
 	}
 	else {
-		$agentPid = Get-SshAgentPid -CheckProcess $false
-		Write-Error "ssh-agent was reported to run under PID $agentPid but we can't find it there."
+		Write-Host -ForegroundColor DarkGray "Starting new ssh-agent instance from: $($sshEnvCommands.SshAgent)"
+
+		# Starts the new agent instance and prints its env variables on stdout
+		# -c creates the output in "C-shell commands" which is easier to parse
+		# than "Bourne shell commands" (which would be -s and the default most of the time).
+		#
+		# NOTE: The process being started here will actually start a second ssh-agent process
+		#   in the background - and then exit after it has written the info about the second
+		#   process to stdout. Thus, we can't use the PID of this command to find the
+		#   background process.
+		$agentEnvAsString = & $sshEnvCommands.SshAgent -c
+
+		if (-Not $?) {
+			throw "'ssh-agent -c' failed."
+		}
+
+		if (-Not $agentEnvAsString) {
+			throw "'ssh-agent -c' didn't return any configuration"
+		}
+
+		$agentEnv = ConvertFrom-NativeSshAgentEnvText $agentEnvAsString
+		if (-Not $agentEnv) {
+			Write-Error "The process 'ssh-agent' could be started but it didn't provide all the necessary information."
+		}
+
+		if (Test-IsWindows -And -Not (Test-SshAgentPid $agentEnv.SshAgentPid)) {
+			# Workaround for ssh on Windows that's compiled against Cygwin which then uses different
+			# PIDs for the "Linux" and the "Windows" part.
+			# See: https://github.com/git-for-windows/git/issues/2274
+			try {
+				$winPidAsString = & cat.exe "/proc/$($agentEnv.SshAgentPid)/winpid" 2>&1
+			}
+			catch {
+				$winPidAsString = $null
+			}
+
+			if (![string]::IsNullOrWhiteSpace($winPidAsString)) {
+				$winPid = 0
+				if ([int]::TryParse($winPidAsString, [ref]$winPid)) {
+					$agentEnv.SshAgentPid = $winPid
+				}
+			}
+		}
+
+		Save-SshAgentEnv $agentEnv
+
+		Import-SshAgentEnv -Force $true
+
+		$effectiveAgentPid = Get-SshAgentPid
+		if ($effectiveAgentPid) {
+			Write-Host -ForegroundColor DarkGray "ssh-agent now running under PID $effectiveAgentPid"
+		}
+		else {
+			$agentPid = Get-SshAgentPid -CheckProcess $false
+			Write-Error "ssh-agent was reported to run under PID $agentPid but we can't find it there."
+		}
 	}
 }
 Export-ModuleMember -Function Start-SshAgent

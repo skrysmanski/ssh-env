@@ -36,7 +36,7 @@ function Invoke-SshEnvApp {
 
 	if (Test-IsMicrosoftSsh) {
 		# For bugs, see: https://github.com/PowerShell/Win32-OpenSSH/issues/
-		Write-Host -ForegroundColor Yellow "Using Microsoft's SSH implementation (some things may not work)"
+		Write-Host -ForegroundColor Yellow "Using Microsoft's SSH implementation (some things may not work as expected)"
 	}
 
 	Assert-AppDirectoriesAreEncrypted
