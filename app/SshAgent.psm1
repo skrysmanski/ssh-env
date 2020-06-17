@@ -108,6 +108,11 @@ function Start-SshAgent {
 	if (Test-IsMicrosoftSsh) {
 		Write-Host -ForegroundColor DarkGray 'Starting ssh-agent service'
 
+		$sshAgentService = Get-Service 'ssh-agent'
+		if ($sshAgentService.StartType -eq 'Disabled') {
+			Write-Error "The ssh-agent service ($($sshAgentService.DisplayName)) is disabled."
+		}
+
 		Start-Service 'ssh-agent'
 
 		Write-Host -ForegroundColor DarkGray "ssh-agent now running as service"
