@@ -103,20 +103,18 @@ Export-ModuleMember -Function Write-SshAgentStatus
 # Starts a new ssh-agent instance and stores its env variables on disk.
 #
 function Start-SshAgent {
-	$sshEnvCommands = Get-SshEnvCommands
+
 
 	if (Test-IsMicrosoftSsh) {
-		Write-Host -ForegroundColor DarkGray "Starting ssh-agent via: $($sshEnvCommands.SshAgent)"
+		Write-Host -ForegroundColor DarkGray 'Starting ssh-agent service'
 
-		& $sshEnvCommands.SshAgent
-
-		if (-Not $?) {
-			throw "'ssh-agent' failed."
-		}
+		Start-Service 'ssh-agent'
 
 		Write-Host -ForegroundColor DarkGray "ssh-agent now running as service"
 	}
 	else {
+		$sshEnvCommands = Get-SshEnvCommands
+
 		Write-Host -ForegroundColor DarkGray "Starting new ssh-agent instance from: $($sshEnvCommands.SshAgent)"
 
 		# Starts the new agent instance and prints its env variables on stdout
