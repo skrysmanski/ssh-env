@@ -42,6 +42,12 @@ function Get-SshEnvCommands() {
 }
 Export-ModuleMember -Function Get-SshEnvCommands
 
+function Test-IsMicrosoftSsh() {
+	$sshEnvCommands = Get-SshEnvCommands
+	return $sshEnvCommands.IsMicrosoftSsh
+}
+Export-ModuleMember -Function Test-IsMicrosoftSsh
+
 function Get-GitCommand() {
 	$command = Get-Command 'git' -ErrorAction SilentlyContinue
 	if (-Not $command) {
@@ -92,11 +98,19 @@ function GetSshEnvCommandsIfExist([string] $SshCommand) {
 		return $false
 	}
 
+	if (Test-IsWindows) {
+		if ($SshCommand.StartsWith($env:windir, [System.StringComparison]::OrdinalIgnoreCase)) {
+			# Seems we're using Microsoft's SSH port.
+			$isMicrosoftSsh = $true
+		}
+	}
+
 	return @{
-		Ssh       = $SshCommand
-		SshAgent  = $sshAgentCommand
-		SshAdd    = $sshAddCommand
-		SshKeyGen = $sshKeyGenCommand
+		Ssh            = $SshCommand
+		SshAgent       = $sshAgentCommand
+		SshAdd         = $sshAddCommand
+		SshKeyGen      = $sshKeyGenCommand
+		IsMicrosoftSsh = $isMicrosoftSsh
 	}
 }
 
