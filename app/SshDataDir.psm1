@@ -1,6 +1,7 @@
 # Stop on every error
 $script:ErrorActionPreference = 'Stop'
 
+Import-Module "$PSScriptRoot/Installation.psm1"
 Import-Module "$PSScriptRoot/SshEnvPaths.psm1"
 Import-Module "$PSScriptRoot/Utils.psm1"
 Import-Module "$PSScriptRoot/SshKey.psm1"
@@ -35,10 +36,12 @@ function Assert-SshDataDirDoesntExist {
 function Initialize-DataDirViaGitClone {
 	Assert-SshDataDirDoesntExist
 
+	$gitCommand = Get-GitCommand
+
 	$gitUrl = Read-TextPrompt 'URL to SSH data Git repository' -AllowEmpty $false
 
 	$sshDataPath = Get-SshDataPath -CreateIfNotExists $true
-	& git clone $gitUrl $sshDataPath
+	& $gitCommand clone $gitUrl $sshDataPath
 	if (-Not $?) {
 		Write-Error "Cloning '$gitUrl' failed"
 	}
@@ -72,10 +75,12 @@ function Initialize-DataDirFromScratch {
 
 	$createGitRepo = Read-YesNoPrompt 'Do you want to version the SSH data with Git?' -DefaultValue $true
 	if ($createGitRepo) {
+		$gitCommand = Get-GitCommand
+
 		try {
 			Push-Location $sshDataPath
 
-			& git init .
+			& $gitCommand init .
 			if (-Not $?) {
 				throw 'git init failed'
 			}
@@ -84,12 +89,12 @@ function Initialize-DataDirFromScratch {
 			# how well ssh takes Windows line endings.
 			Copy-Item "$PSScriptRoot/git-attributes.txt" "./.gitattributes"
 
-			& git add * .gitattributes
+			& $gitCommand add * .gitattributes
 			if (-Not $?) {
 				throw 'git add failed'
 			}
 
-			& git commit -m 'SSH data repository created'
+			& $gitCommand commit -m 'SSH data repository created'
 			if (-Not $?) {
 				throw 'git commit failed'
 			}

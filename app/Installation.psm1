@@ -3,6 +3,16 @@ $script:ErrorActionPreference = 'Stop'
 
 Import-Module "$PSScriptRoot/Utils.psm1"
 
+function Get-GitCommand() {
+	$command = Get-Command 'git' -ErrorAction SilentlyContinue
+	if (-Not $command) {
+		Write-Error 'Could not locate "git" executable. Is Git installed?'
+	}
+
+	return $command.Source
+}
+Export-ModuleMember -Function Get-GitCommand
+
 function Assert-SoftwareInstallation {
 	$sshCommand = Get-Command 'ssh' -ErrorAction SilentlyContinue
 	if ((-Not $sshCommand) -And (Test-IsWindows)) {
@@ -30,7 +40,6 @@ function Assert-SoftwareInstallation {
 	}
 
 	$requiredBinaries = Get-RequiredSshBinaries
-	$requiredBinaries += 'git'
 
 	foreach ($binaryName in $requiredBinaries) {
 		if ($binaryName -eq 'ssh') {
