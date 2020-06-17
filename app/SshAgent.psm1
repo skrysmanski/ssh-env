@@ -21,7 +21,7 @@ function Get-SshAgentStatus {
 		$sshAgentService = Get-Service 'ssh-agent'
 
 		if ($sshAgentService.Status -eq 'Running') {
-			& $sshEnvCommands.SshAdd -l 2>&1 | Out-Null
+			& $sshEnvCommands.SshAdd -l | Out-Null
 			return [SshAgentStatus]$LASTEXITCODE
 		}
 		else {
