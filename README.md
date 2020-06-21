@@ -221,7 +221,7 @@ Linux TDB
 
 Another rule of thumb: **Don't use ssh-env inside of a virtual machine or (Docker/Kubernetes/...) container** - if you're not the only admin on the host machine.
 
-Windows doesn't have a `ssh` command. So it may be tempting to use a Docker container or a virtual machine as workaround.
+Windows doesn't have a `ssh` command (no longer true). So it may be tempting to use a Docker container or a virtual machine as workaround.
 
 However, both solutions (VMs and containers) have security problems - because they have security measures to prevent a malicious user from breaking *out* - but (usually) no measures to prevent a malicious user from breaking *in*. Any user on a host system can access (e.g. RDP, start/stop/save) any running virtual machine (as far as I know).
 
@@ -237,6 +237,68 @@ This machine can be locked down and stripped of all unnecessary software to redu
 
 You would then remote into this machine (e.g. via RDP) and have preferably TFA set up to protect the account on this machine (for example via [Duo](https://duo.com/)).
 
+### Use ssh-agent?
+
+Using the ssh-agent makes using ssh keys more convenient. On the other hand, using the ssh-agent creates a security risk - should an attacker gain access to your machine.
+
+#### Security Risk with ssh-agent
+
+What's the security risk when using ssh-agent? When storing ssh keys in an ssh-agent, an attacker could get access to the systems the stored ssh keys give access to.
+
+He also may or may not (depending on the implementation of ssh-agent) be able to read your private key while it's stored in the ssh-agent.
+
+What attacker are we talking about here? To be able to attack your ssh-agent, an attacker must basically gain access to your user session (i.e. do stuff as your user). In theory, he at least needs the ability to read arbitrary files from your disk. In practice, though, I'd suspect that if an attack has *read* access to your disk, he also has *write* access to your disk.
+
+Primary attackers are:
+
+* hacker via trojan/virus and a backdoor
+* malicious/compromised root/Administrator
+
+How big is the risk? In my opinion, the risk of storing ssh-keys in an ssh-agent is rather **small**. Why? Because if an attacker gets access to your user session, your system (or at least your user session) can be considered compromised. And with a compromised system, an attacker has many (other) ways of getting your ssh private key - no matter whether you use the ssh-agent or not. Having the ssh keys stored in an ssh-agent just makes it *easier* for the attacker (especially if the keys are stored indefinitely).
+
+#### Use Time-to-Live for SSH key
+
+When storing an ssh key in an ssh-agent, you have two options:
+
+* Store the key indefinitely (until the ssh-agent process is terminated)
+* Store the key just for some time (and remove it afterwards from the ssh-agent again)
+
+Obviously, storing the ssh key just for a limited time is recommended as it reduces the risk of an attacker getting access to the key.
+
+#### Don't use Agent Forwarding
+
+The ssh-agent has a feature called "agent forwarding". It's generally recommended *not* to use this feature if the target server is not under your control. You can search the Internet for more detailed explanations.
+
+### Using Microsoft's ssh-agent Service
+
+Microsoft has recently begun to provide an [OpenSSH port](https://github.com/powershell/Win32-OpenSSH) for Windows. As far as security is concerned, there are some changes compared to the regular OpenSSH.
+
+My conclusion (explained below) is: the Microsoft OpenSSH port *increases the security risk* - if an attacker gets access to your user session.
+
+#### ssh-agent as a Service
+
+Microsoft implements the `ssh-agent` as service (rather than a user session process).
+
+Even though all users on a single machine share the same process (since it's a service), it apparently does *not* leak keys to other users. The [Microsoft documentation](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_keymanagement) states:
+
+> To help with that, use ssh-agent to securely store the private keys within a Windows security context, associated with your Windows login.
+
+and:
+
+> The private key cannot be retrieved from the agent.
+
+I've not verified this claim but I'm inclined to trust Microsoft on this one.
+
+From a security standpoint, there's only one (slight) downside of this approach: OpenSSH's default implementation "hides" the access to the ssh-agent behind a locally stored socket file with a random name (i.e. it's *not* enough to know the PID of the ssh-agent process). By implementing the ssh-agent as a service, this security "layer" no longer exits (because any user process can get access to the stored ssh keys without the need to know some random file name). However, this security layer just makes it more *difficult* for an attacker to gain access to the ssh-agent - it doesn't prevent it (security through obscurity).
+
+#### ssh-agent stores ssh keys indefinitely
+
+Microsoft's ssh-agent implementation does not support time-to-live for ssh keys (i.e. `ssh-add -t` is [not (yet) supported](https://github.com/PowerShell/Win32-OpenSSH/issues/1510)). Instead, all added keys are stored indefinitely - and even survive a reboot.
+
+I'm assuming that the added keys are encrypted at rest (i.e. while the computer is turned off) so there's no security risk with this.
+
+The only security risk I'm seeing with this approach is that of having access to the ssh key all the time (i.e. no time-to-live). See the ssh-agent section for a discussion on this topic.
+
 ## Synchronizing ssh-env Between Different Computers
 
 On design goal of ssh-env is to be portable, i.e. it's possible to use the same files on different computers.
@@ -247,7 +309,7 @@ As far as synchronizing is concerned, an ssh-env directory is comprised of three
 1. `/ssh-data/` : the ssh data directory
 1. `/.local/` : the local ssh-agent settings
 
-The root directory is (usually) already under Git control - so you can use Git to put it on other computers.
+The root directory is (usually) already version controlled under Git - so you can use Git to put it on other computers.
 
 If you used `./ssh-env datadir init` to create your data directory, ssh-env gave you the option to create a Git repository for the data directory. In this case, you use Git to synchronize your ssh data between computers. On another computer you can then use this command to get your ssh data:
 
@@ -278,8 +340,8 @@ When comparing ssh-ing into a machine via plain ssh (`ssh targetserver`) and via
 Here are some pointers:
 
 * **You control where your ssh files are stored:** ssh-env stores all of its data files inside a directory inside of ssh-env (`ssh-data`). This especially allows you to have multiple ssh-envs on the same computer and also makes sharing the files between computers a little bit easier.
-* **Easier to use on Windows:** There's usually no `ssh` available on Windows. Or you have some third-party product installed but need to open up a shell to get to `ssh`. On Windows, calling `ssh-env targetserver` greatly simplifies this process.
-* **Easier tooling:** `ssh` itself is pretty easy to use; however, its tools are not. ssh-env makes it pretty easy to create, check and install SSH key pairs and to manage the ssh-agent - all under one command.
+* **Easier to use on Windows:** There's usually no `ssh` available on Windows (no longer true). Or you have some third-party product installed but need to open up a shell to get to `ssh`. On Windows, calling `ssh-env targetserver` greatly simplifies this process.
+* **Easier tooling:** `ssh` itself is pretty easy to use; however, its tools are not. ssh-env makes it pretty easy to create, check, and install SSH key pairs and to manage the ssh-agent - all under one command.
 
 ## Importing an Existing SSH Key Pair
 
@@ -361,7 +423,7 @@ Based on the **Easy-to-use, maintainable, secure** principle, here are the decis
 
 ## Disclaimer
 
-While I'm trying to make ssh-env as secure as possible, I'm not considering myself a security professional. I just understand the basic concepts.
+While I'm trying to make ssh-env as secure as possible, I'm *not* considering myself a security professional. I just understand the basic concepts.
 
 So, use ssh-env at your own risk (and/or check out all the source code).
 
