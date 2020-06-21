@@ -105,11 +105,19 @@ function GetSshEnvCommandsIfExist([string] $SshCommand) {
 		}
 	}
 
+	if (!$isMicrosoftSsh) {
+		$catCommand = GetBinaryPathIfExists $BinDir 'cat'
+		if (!$catCommand) {
+			return $false
+		}
+	}
+
 	return @{
 		Ssh            = $SshCommand
 		SshAgent       = $sshAgentCommand
 		SshAdd         = $sshAddCommand
 		SshKeyGen      = $sshKeyGenCommand
+		Cat            = $catCommand
 		IsMicrosoftSsh = $isMicrosoftSsh
 	}
 }

@@ -150,7 +150,7 @@ function Start-SshAgent {
 			# PIDs for the "Linux" and the "Windows" part.
 			# See: https://github.com/git-for-windows/git/issues/2274
 			try {
-				$winPidAsString = & cat.exe "/proc/$($agentEnv.SshAgentPid)/winpid" 2>&1
+				$winPidAsString = & $sshEnvCommands.Cat "/proc/$($agentEnv.SshAgentPid)/winpid" 2>&1
 			}
 			catch {
 				$winPidAsString = $null
