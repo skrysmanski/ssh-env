@@ -1,7 +1,13 @@
 #!/bin/bash
-which pwsh >/dev/null
-if [ ! $? ]; then
-    echo "ERROR: PowerShell is not installed"
+pwsh_path=`command -v pwsh`
+if [ -z "$pwsh_path" ]; then
+    echo "ERROR: PowerShell is not installed."
+    echo
+    echo "PowerShell is required for ssh-env to work."
+    echo "See here for how to install PowerShell:"
+    echo
+    echo "   https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell"
+    echo
     exit 1
 fi
 
