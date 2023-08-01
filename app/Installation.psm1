@@ -14,6 +14,7 @@ function Get-SshEnvCommands() {
 	if ($sshCommand) {
 		$sshEnvCommands = GetSshEnvCommandsIfExist $sshCommand.Source
 		if ($sshEnvCommands) {
+			# Found SSH and related apps
 			$script:SshEnvCommands = $sshEnvCommands
 			return $sshEnvCommands
 		}
@@ -26,6 +27,7 @@ function Get-SshEnvCommands() {
 		foreach ($sshCommand in $sshCommands) {
 			$sshEnvCommands = GetSshEnvCommandsIfExist $sshCommand
 			if ($sshEnvCommands) {
+				# Found SSH and related apps
 				$script:SshEnvCommands = $sshEnvCommands
 				return $sshEnvCommands
 			}
@@ -33,6 +35,7 @@ function Get-SshEnvCommands() {
 		}
 	}
 
+	# No SSH or not all required related apps found
 	if ($checkedLocations.Count -eq 0) {
 		Write-Error 'Could not locate "ssh" executable.'
 	}
