@@ -112,7 +112,10 @@ function GetSshEnvCommandsIfExist([string] $SshCommand) {
 	if (!$isMicrosoftSsh) {
 		$catCommand = GetBinaryPathIfExists $BinDir 'cat'
 		if (!$catCommand) {
-			$missingPrograms += 'cat'
+			$catCommand = Get-Command 'cat' -ErrorAction SilentlyContinue
+			if (!$catCommand) {
+				$missingPrograms += 'cat'
+			}
 		}
 	}
 
