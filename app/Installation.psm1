@@ -13,7 +13,7 @@ function Get-SshEnvCommands() {
 	$sshCommand = Get-Command 'ssh' -ErrorAction SilentlyContinue
 	if ($sshCommand) {
 		$sshEnvCommands = GetSshEnvCommandsIfExist $sshCommand.Source
-		if ($sshEnvCommands) {
+		if ($sshEnvCommands.MissingPrograms.Length -eq 0) {
 			# Found SSH and related apps
 			$script:SshEnvCommands = $sshEnvCommands
 			return $sshEnvCommands
@@ -26,7 +26,7 @@ function Get-SshEnvCommands() {
 		$sshCommands = GetSshExecutablesFromGitForWindows
 		foreach ($sshCommand in $sshCommands) {
 			$sshEnvCommands = GetSshEnvCommandsIfExist $sshCommand
-			if ($sshEnvCommands) {
+			if ($sshEnvCommands.MissingPrograms.Length -eq 0) {
 				# Found SSH and related apps
 				$script:SshEnvCommands = $sshEnvCommands
 				return $sshEnvCommands
@@ -40,7 +40,7 @@ function Get-SshEnvCommands() {
 		Write-Error 'Could not locate "ssh" executable.'
 	}
 	else {
-		Write-Error "Could not locate full SSH installation (but found the ssh executable in: $([string]::Join(', ', $checkedLocations)))."
+		Write-Error "Could not locate full SSH installation (but found the ssh executable in: $([string]::Join(', ', $checkedLocations))).`nMissing commands: $([string]::Join(', ', $sshEnvCommands.MissingPrograms))"
 	}
 }
 Export-ModuleMember -Function Get-SshEnvCommands
@@ -85,20 +85,21 @@ function GetSshExecutablesFromGitForWindows() {
 
 function GetSshEnvCommandsIfExist([string] $SshCommand) {
 	$binDir = [IO.Path]::GetDirectoryName($SshCommand)
+	$missingPrograms = @()
 
 	$sshAgentCommand = GetBinaryPathIfExists $BinDir 'ssh-agent'
 	if (!$sshAgentCommand) {
-		return $false
+		$missingPrograms += 'ssh-agent'
 	}
 
 	$sshAddCommand = GetBinaryPathIfExists $BinDir 'ssh-add'
 	if (!$sshAddCommand) {
-		return $false
+		$missingPrograms += 'ssh-add'
 	}
 
 	$sshKeyGenCommand = GetBinaryPathIfExists $BinDir 'ssh-keygen'
 	if (!$sshKeyGenCommand) {
-		return $false
+		$missingPrograms += 'ssh-keygen'
 	}
 
 	if (Test-IsWindows) {
@@ -111,17 +112,18 @@ function GetSshEnvCommandsIfExist([string] $SshCommand) {
 	if (!$isMicrosoftSsh) {
 		$catCommand = GetBinaryPathIfExists $BinDir 'cat'
 		if (!$catCommand) {
-			return $false
+			$missingPrograms += 'cat'
 		}
 	}
 
 	return @{
-		Ssh            = $SshCommand
-		SshAgent       = $sshAgentCommand
-		SshAdd         = $sshAddCommand
-		SshKeyGen      = $sshKeyGenCommand
-		Cat            = $catCommand
-		IsMicrosoftSsh = $isMicrosoftSsh
+		Ssh             = $SshCommand
+		SshAgent        = $sshAgentCommand
+		SshAdd          = $sshAddCommand
+		SshKeyGen       = $sshKeyGenCommand
+		Cat             = $catCommand
+		MissingPrograms = $missingPrograms
+		IsMicrosoftSsh  = $isMicrosoftSsh
 	}
 }
 
