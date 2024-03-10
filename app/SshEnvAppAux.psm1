@@ -4,7 +4,7 @@ $script:ErrorActionPreference = 'Stop'
 Import-Module "$PSScriptRoot/Utils.psm1"
 
 function Get-EnvVersion {
-	return Get-Content "$PSScriptRoot/VERSION.txt" -Encoding 'utf8'
+	return Get-Content "$PSScriptRoot/_VERSION.txt" -Encoding 'utf8'
 }
 
 function Write-Help([String] $errorMessage = $null) {
@@ -13,7 +13,7 @@ function Write-Help([String] $errorMessage = $null) {
 		Write-Host
 	}
 
-	Get-Content "$PSScriptRoot/help.txt" -Encoding 'utf8' | Write-Host
+	Get-Content "$PSScriptRoot/_HELP.txt" -Encoding 'utf8' | Write-Host
 }
 
 function Write-HelpAndExit([String] $errorMessage = $null) {
