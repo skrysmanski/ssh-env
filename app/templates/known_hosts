@@ -1,0 +1,5 @@
+#
+# NOTE: The fingerprints in this file are in a different format than the fingerprint reported by SSH (for unknown reasons).
+#  This means that you should always let ssh add lines to this files (and not try to do it yourself).
+#  See also: https://manpages.ubuntu.com/manpages/noble/en/man8/sshd.8.html#ssh_known_hosts%20file%20format
+#

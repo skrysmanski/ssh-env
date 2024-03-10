@@ -70,8 +70,8 @@ function Initialize-DataDirFromScratch {
 	# Create default config file
 	New-DefaultSshConfig
 
-	# Create empty known_hosts file so that it can be added to Git (or whatever vcs the user wants to use).
-	New-Item "$sshDataPath/known_hosts" -ItemType File | Out-Null
+	# Create empty known_hosts file with some helpful comments.
+	Copy-Item "$PSScriptRoot/templates/known_hosts" "$sshDataPath/known_hosts"
 
 	$createGitRepo = Read-YesNoPrompt 'Do you want to version the SSH data with Git?' -DefaultValue $true
 	if ($createGitRepo) {
