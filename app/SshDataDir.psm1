@@ -87,7 +87,7 @@ function Initialize-DataDirFromScratch {
 
 			# Disable Git's auto eol conversions for the data dir. Not sure
 			# how well ssh takes Windows line endings.
-			Copy-Item "$PSScriptRoot/git-attributes.txt" "./.gitattributes"
+			Copy-Item "$PSScriptRoot/templates/git-attributes.txt" "./.gitattributes"
 
 			& $gitCommand add * .gitattributes
 			if (-Not $?) {

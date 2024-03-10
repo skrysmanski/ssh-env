@@ -54,7 +54,7 @@ function New-DefaultSshConfig {
 		throw 'ssh config file already exists'
 	}
 
-	Copy-Item "$PSScriptRoot/default-ssh-config.conf" $sshConfigPath
+	Copy-Item "$PSScriptRoot/templates/default-ssh-config.conf" $sshConfigPath
 }
 Export-ModuleMember -Function New-DefaultSshConfig
 
