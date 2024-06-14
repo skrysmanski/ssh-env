@@ -11,7 +11,7 @@ function Get-SshAgentConfigFilePath {
 }
 
 function Initialize-SshAgentConfig {
-	$DEFAULT_KEY_TTL = 10
+	$DEFAULT_KEY_TTL = 900
 
 	$sshEnvCommands = Get-SshEnvCommands
 
