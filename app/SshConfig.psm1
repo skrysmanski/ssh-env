@@ -110,7 +110,7 @@ function Get-RuntimeSshConfig {
 	$knownHostsPath = [IO.Path]::Combine($sshDataPath, 'known_hosts')
 
 	return @"
-# NOTE: This file is AUTO-GENERATED. Do NOT edit manually.
+# IMPORTANT: This file is AUTO-GENERATED. Do NOT edit manually!!!
 
 # Using ssh-env from: $sshEnvPath
 
