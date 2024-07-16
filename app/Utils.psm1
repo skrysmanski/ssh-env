@@ -66,12 +66,12 @@ function Read-ChoicePrompt($Prompt, [string[]] $Choices, [string] $DefaultValue 
 	}
 
 	while ($true) {
-		$input = Read-Host $Prompt
+		$choice = Read-Host $Prompt
 
-		if ($input -in $Choices) {
-			return $input
+		if ($choice -in $Choices) {
+			return $choice
 		}
-		elseif (($input -eq '') -and $DefaultValue) {
+		elseif (($choice -eq '') -and $DefaultValue) {
 			return $DefaultValue
 		}
 	}
@@ -101,13 +101,13 @@ function Read-IntegerPrompt($Prompt, [int] $DefaultValue = $null) {
 	}
 
 	while ($true) {
-		$input = Read-Host $Prompt
+		$choice = Read-Host $Prompt
 
-		if ($input -match '^[0-9]+$') {
+		if ($choice -match '^[0-9]+$') {
 			# Valid input. Convert from string to int.
-			return [int]$input
+			return [int]$choice
 		}
-		elseif (($input -eq '') -and ($DefaultValue -ne $null)) {
+		elseif (($choice -eq '') -and ($DefaultValue -ne $null)) {
 			return $DefaultValue
 		}
 	}
@@ -119,10 +119,10 @@ function Read-TextPrompt($Prompt, [bool] $AllowEmpty = $false, [string] $Default
 	}
 
 	while ($true) {
-		$input = Read-Host $Prompt
+		$choice = Read-Host $Prompt
 
-		if ($input -ne '') {
-			return $input
+		if ($choice -ne '') {
+			return $choice
 		}
 		else {
 			if ($DefaultValue) {
