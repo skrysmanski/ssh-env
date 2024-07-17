@@ -13,7 +13,7 @@ function New-SshKey {
 	# "install-key". There it is then used to make it easier to differentiate
 	# the various authorized keys (as stored in "~/.ssh/authorized_keys").
 	$userName = [Environment]::UserName
-	$certName = Read-TextPrompt "Who does this certificate belong to?" -DefaultValue $userName
+	$keyPairComment = Read-TextPrompt "Who does this key pair belong to?" -DefaultValue $userName
 
 	$sshPrivateKeyPath = Get-SshPrivateKeyPath -CreateDirIfNotExists $true
 
@@ -21,10 +21,10 @@ function New-SshKey {
 	# -o : store private key with bcrypt encryption (which makes brute-force decrypting hard)
 	# -t : create RSA key
 	# -b : use 4096 bits
-	# -C : add comment to generated certificate
+	# -C : add comment to generated public key
 	# -f : output file
 	# See also: http://www.manpagez.com/man/1/ssh-keygen/
-	& $sshEnvCommands.SshKeyGen -o -t rsa -b 4096 -C "$certName" -f "$sshPrivateKeyPath"
+	& $sshEnvCommands.SshKeyGen -o -t rsa -b 4096 -C "$keyPairComment" -f "$sshPrivateKeyPath"
 	if (-Not $?) {
 		Write-Error 'ssh-keygen failed'
 	}

@@ -102,7 +102,7 @@ You'll be asked a series of questions.
     $ ./ssh-env datadir init
     Do you have an SSH key pair (in case of doubt: no)? (y/n): n
 
-    Who does this certificate belong to? [manski]:
+    Who does this key pair belong to? [manski]:
     Generating public/private rsa key pair.
     Enter passphrase (empty for no passphrase):
     Enter same passphrase again:
@@ -415,7 +415,7 @@ Based on the **Easy-to-use, maintainable, secure** principle, here are the decis
 * **Private Key => Secure:** The SSH private key is encrypted with a password using bcrypt pbkdf, which makes it extremely compute intensive to brute-force the password. You can find out more about this [here](http://www.tedunangst.com/flak/post/new-openssh-key-format-and-bcrypt-pbkdf).
 * **known_hosts => Maintainable:** Host names in the `known_hosts` file are not hashed (by default) to make this file better maintainable; i.e. host names are stored in plain-text. (This behavior is controlled by the `HashKnownHosts` setting in the SSH `config` file.) While hashing them would prevent attackers from harvesting host names in case of a security breach, there is usually a list of hosts in the SSH `config` file anyways; so, hashing the host names wouldn't bring any benefits at all.
 * **No support for PuTTy => Secure:** I thought about support for PuTTy on Windows. However, PuTTy doesn't support OpenSSH's new, more secure private key format. So I decided against PuTTy support.
-* **No support for changing passphrase of private key => Secure:** This was left out so that people would not think that this increases security. It does not because old versions of the private key may still be in the Git repository. If you think that your passphrase is not secure enough anymore, it's more secure to create a new certificate.
+* **No support for changing passphrase of private key => Secure:** This was left out so that people would not think that this increases security. It does not because old versions of the private key may still be in the Git repository. If you think that your passphrase is not secure enough anymore, it's more secure to create a new SSH key pair.
 * **Separation of app and data dir => Maintainable/Secure/Easy-to-use:** There are (at least) three different variants on how to combine the ssh-env app with the ssh data dir:
   1. **Both in same repository and directory:** This is easiest to use (and was the initial design) but requires more knowledge about how merge the upstream ssh-env into your private repository. It's also less secure if you want to do pull request - as your ssh data dir might end up in the pull request if you're not super careful.
   1. **Both in the same directory but in different repositories (current design):** In my opinion the best compromise without the drawbacks of the other designs.
