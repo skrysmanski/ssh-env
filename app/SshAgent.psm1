@@ -251,7 +251,7 @@ function Assert-SshAgentState([String] $SshPrivateKeyPath) {
 
 	$agentConf = Get-SshAgentConfig -CreateIfNotExists
 
-	if ($agentConf.useSshAgent) {
+	if ($agentConf.UseSshAgent) {
 		$agentStatus = Get-SshAgentStatus
 		if ($agentStatus -eq 'NotRunning') {
 			Start-SshAgent

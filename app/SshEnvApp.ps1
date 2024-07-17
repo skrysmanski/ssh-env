@@ -176,7 +176,7 @@ function Invoke-SshEnvApp {
 
 				'load' {
 					$agentConf = Get-SshAgentConfig -CreateIfNotExists
-					if ($agentConf.useSshAgent) {
+					if ($agentConf.UseSshAgent) {
 						# Make sure the generated ssh_config is up-to-date so that it can be
 						# used by external processes.
 						Assert-SshConfigIsUpToDate | Out-Null
