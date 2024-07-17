@@ -115,3 +115,18 @@ function Get-SshAgentConfig([switch] $CreateIfNotExists) {
 	return $config
 }
 Export-ModuleMember -Function Get-SshAgentConfig
+
+#
+# Returns whether the 1Password SSH agent is used.
+#
+function Test-Use1PasswordSshAgent() {
+	$agentConf = Get-SshAgentConfig
+
+	if ($agentConf -And $agentConf.UseSshAgent -And $agentConf.Use1PasswordSshAgent) {
+		return $true
+	}
+	else {
+		return $false
+	}
+}
+Export-ModuleMember -Function Test-Use1PasswordSshAgent

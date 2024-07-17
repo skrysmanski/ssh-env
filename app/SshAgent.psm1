@@ -17,8 +17,7 @@ Enum SshAgentStatus {
 # Returns the status of the ssh-agent.
 #
 function Get-SshAgentStatus {
-	$agentConf = Get-SshAgentConfig
-	if ($agentConf.Use1PasswordSshAgent) {
+	if (Test-Use1PasswordSshAgent) {
 		if (Test-Is1PasswordSshAgentEnabled) {
 			return [SshAgentStatus]::RunningWithKey
 		}
@@ -68,12 +67,12 @@ Export-ModuleMember -Function Get-SshAgentStatus
 #
 function Write-SshAgentStatus {
 	$agentStatus = Get-SshAgentStatus
-	$agentConf = Get-SshAgentConfig
+	$use1Password = Test-Use1PasswordSshAgent
 
 	Write-Host -NoNewline 'ssh-agent: '
 	switch ($agentStatus) {
 		RunningWithKey {
-			if ($agentConf.Use1PasswordSshAgent) {
+			if ($use1Password) {
 				Write-Host -NoNewline -ForegroundColor Green 'enabled'
 			}
 			else {
@@ -88,7 +87,7 @@ function Write-SshAgentStatus {
 		}
 
 		NotRunning {
-			if ($agentConf.Use1PasswordSshAgent) {
+			if ($use1Password) {
 				Write-Host -NoNewline -ForegroundColor Yellow 'disabled'
 			}
 			else {
@@ -103,7 +102,7 @@ function Write-SshAgentStatus {
 		}
 	}
 
-	if ($agentConf.Use1PasswordSshAgent) {
+	if ($use1Password) {
 		Write-Host -ForegroundColor DarkGray " [1Password SSH agent]"
 	}
 	elseif (Test-IsMicrosoftSsh) {
@@ -126,9 +125,7 @@ Export-ModuleMember -Function Write-SshAgentStatus
 # Starts a new ssh-agent instance and stores its env variables on disk.
 #
 function Start-SshAgent {
-	$agentConf = Get-SshAgentConfig
-
-	if ($agentConf.Use1PasswordSshAgent) {
+	if (Test-Use1PasswordSshAgent) {
 		$agentStatus = Get-SshAgentStatus
 		if ($agentStatus -ne [SshAgentStatus]::RunningWithKey) {
 			Write-Error "The 1Password SSH agent is not enabled. Enable it through 1Password's `"Developer`" settings."
@@ -215,8 +212,7 @@ function Stop-SshAgent {
 		return $false
 	}
 
-	$agentConf = Get-SshAgentConfig
-	if ($agentConf.Use1PasswordSshAgent) {
+	if (Test-Use1PasswordSshAgent) {
 		Write-Error "The 1Password SSH agent can't be stopped this way. You have to disable it through 1Password's `"Developer`" settings."
 	}
 	elseif (Test-IsMicrosoftSsh) {
