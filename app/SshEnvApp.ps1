@@ -181,8 +181,13 @@ function Invoke-SshEnvApp {
 						# used by external processes.
 						Assert-SshConfigIsUpToDate | Out-Null
 
-						$privateKeyPath = Get-SshPrivateKeyPath
-						Assert-SshAgentState -SshPrivateKeyPath $privateKeyPath
+						if ($agentConf.Use1PasswordSshAgent) {
+							Write-Host -ForegroundColor Green "SSH keys don't need to be loaded if 1Password's SSH agent is used."
+						}
+						else {
+							$privateKeyPath = Get-SshPrivateKeyPath
+							Assert-SshAgentState -SshPrivateKeyPath $privateKeyPath
+						}
 					}
 					else {
 						Write-Error 'Use of ssh-agent is disabled by configuration.'

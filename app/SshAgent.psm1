@@ -278,11 +278,25 @@ function Add-SshKeyToRunningAgent([String] $SshPrivateKeyPath, [int] $KeyTimeToL
 # SSH agent is supposed to be used).
 #
 function Assert-SshAgentState([String] $SshPrivateKeyPath) {
+	$agentConf = Get-SshAgentConfig -CreateIfNotExists
+
+	#
+	# 1Password
+	#
+	if ($agentConf.UseSshAgent -And $agentConf.Use1PasswordSshAgent) {
+		if (-Not (Test-Is1PasswordSshAgentEnabled)) {
+			Write-Error "ssh-env is configured to use 1Password's SSH agent but the SSH agent is disable.`nEnable it through 1Password's `"Developer`" settings."
+		}
+
+		return
+	}
+
+	#
+	# Regular SSH agent implementation
+	#
 	if (-Not (Test-Path $SshPrivateKeyPath)) {
 		Write-Error "Private SSH key doesn't exist at: $SshPrivateKeyPath`nDid you run: ssh-env datadir create/clone ?"
 	}
-
-	$agentConf = Get-SshAgentConfig -CreateIfNotExists
 
 	if ($agentConf.UseSshAgent) {
 		$agentStatus = Get-SshAgentStatus

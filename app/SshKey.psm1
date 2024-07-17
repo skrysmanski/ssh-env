@@ -4,8 +4,15 @@ $script:ErrorActionPreference = 'Stop'
 Import-Module "$PSScriptRoot/Installation.psm1"
 Import-Module "$PSScriptRoot/Utils.psm1"
 Import-Module "$PSScriptRoot/SshConfig.psm1"
+Import-Module "$PSScriptRoot/SshAgentConf.psm1"
 
 function New-SshKeyPair {
+	if (Test-Use1PasswordSshAgent) {
+		Write-Host -ForegroundColor Yellow "SSH keys can't be created this way if 1Password's SSH agent is used."
+		Write-Host -ForegroundColor Yellow "Use 1Password to create a new SSH key."
+		return
+	}
+
 	$sshEnvCommands = Get-SshEnvCommands
 
 	# Request the user's name from the user. Note this is actually just
@@ -41,7 +48,37 @@ function Install-SshKey([String] $SshTarget) {
 	$sshPublicKeyPath = Get-SshPublicKeyPath
 
 	if (-Not (Test-Path $sshPublicKeyPath -PathType Leaf)) {
-		Write-Error "No public key file exists at: $sshPublicKeyPath`nYou can create your SSH key pair with 'ssh-env key create'."
+		if (Test-Use1PasswordSshAgent) {
+			Write-Host -ForegroundColor Yellow "No public key file exists at: $sshPublicKeyPath"
+			Write-Host
+			Write-Host "Unfortunately, the public key of your SSH key can't be automatically extracted from 1Password."
+			Write-Host -ForegroundColor Cyan "So, please copy the public(!) key of your SSH key and paste it here."
+			Write-Host
+
+			$publicKey = Read-TextPrompt "Public Key"
+			Write-Host
+
+			if (-Not ($publicKey.StartsWith('ssh-'))) {
+
+				Write-Error "The entered key doesn't seem to be a valid SSH public key! Did you accidentally paste your private key?"
+			}
+
+			# Request the user's name from the user. Note this is actually just
+			# a comment and is copied over to the target system when running
+			# "install-key". There it is then used to make it easier to differentiate
+			# the various authorized keys (as stored in "~/.ssh/authorized_keys").
+			$userName = [Environment]::UserName
+			$keyPairComment = Read-TextPrompt "Who does this SSH key belong to?" -DefaultValue $userName
+			Write-Host
+
+			Write-FileUtf8NoBom $sshPublicKeyPath "$publicKey $keyPairComment`n"
+
+			Write-Host -ForegroundColor Green "Public key saved to: $sshPublicKeyPath"
+			Write-Host
+		}
+		else {
+			Write-Error "No public key file exists at: $sshPublicKeyPath`nYou can create your SSH key pair with 'ssh-env key create'."
+		}
 	}
 
 	$publicKey = Get-Content $sshPublicKeyPath -Encoding 'utf8'
@@ -85,6 +122,12 @@ function Install-SshKey([String] $SshTarget) {
 Export-ModuleMember -Function Install-SshKey
 
 function Write-SshKeyEncryptionStateToHost {
+	if (Test-Use1PasswordSshAgent) {
+		Write-Host -ForegroundColor Yellow "Private SSH keys can't be checked this way if 1Password's SSH agent is used."
+		Write-Host -ForegroundColor Yellow "Use 1Password to check the SSH key pair for problems."
+		return
+	}
+
 	$sshEnvCommands = Get-SshEnvCommands
 
 	$sshPrivateKeyPath = Get-SshPrivateKeyPath
