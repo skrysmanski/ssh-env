@@ -19,6 +19,16 @@ function Get-GlobalSshConfigPath([bool] $CreateDirIfNotExists) {
 }
 Export-ModuleMember -Function Get-GlobalSshConfigPath
 
+#
+# Returns the path to a ssh config file. Note that the file may not exist.
+#
+# By default (if $RuntimeConfig = $true), this function returns the path to the ssh config file
+# used by the ssh executable itself. (If ssh-env's data dir is installed globally, this function
+# will return "~/.ssh/config". Otherwise it will return "./.local/ssh.generated.conf".)
+#
+# If $RuntimeConfig = $false, this function will return will return the path to the ssh config
+# (stub) in the user's data dir (i.e. "./ssh-data/config").
+#
 function Get-SshConfigPath([bool] $RuntimeConfig = $true, [bool] $CreateDirIfNotExists = $false) {
 	if ($runtimeConfig) {
 		$localDataPath = Get-SshLocalDataPath -CreateIfNotExists $CreateDirIfNotExists
@@ -70,6 +80,11 @@ function Get-SshPublicKeyPath {
 }
 Export-ModuleMember -Function Get-SshPublicKeyPath
 
+#
+# Returns the desired contents of the runtime SSH config file. Note that this may
+# be different from the contents of the runtime SSH config file as it's currently
+# stored on disk.
+#
 function Get-RuntimeSshConfig {
 	$sshConfigPath = Get-SshConfigPath -RuntimeConfig $false
 	if (Test-Path $sshConfigPath) {
@@ -143,6 +158,12 @@ $sshConfig
 "@
 }
 
+#
+# Makes sure that runtime SSH config file (see Get-SshConfigPath) is up-to-date (i.e.
+# matches the desired content created by Get-RuntimeSshConfig).
+#
+# Returns the path to the runtime SSH config file (as returned by Get-SshConfigPath).
+#
 function Assert-SshConfigIsUpToDate {
 	$runtimeSshConfig = Get-RuntimeSshConfig
 
