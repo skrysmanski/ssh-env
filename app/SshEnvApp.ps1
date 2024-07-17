@@ -93,7 +93,7 @@ function Invoke-SshEnvApp {
 					break
 				}
 
-				'init' {
+				'create' {
 					Initialize-DataDirFromScratch
 					break
 				}

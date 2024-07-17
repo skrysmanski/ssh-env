@@ -1,7 +1,7 @@
 Usage:
   ssh-env [ssh] [<user>@]<ssh-server>
   ssh-env agent (status|stop|config)
-  ssh-env datadir (init|clone|global-install|global-uninstall)
+  ssh-env datadir (create|clone|global-install|global-uninstall)
   ssh-env key (create|install|check|load)
   ssh-env (help|--help|-h)
   ssh-env (version|--version|-v)
@@ -14,7 +14,7 @@ Commands:
   agent stop                 Stops the ssh-agent (removing any loaded private key from memory)
   agent config               Creates configuration file for ssh-agent (per computer and not shared)
 
-  datadir init               Creates a fresh ssh data dir (containing the ssh key pair and ssh config)
+  datadir create             Creates a fresh ssh data dir (containing the ssh key pair and ssh config)
   datadir clone              Clones an existing ssh data dir with git
   datadir status             Prints various information about the datadir
   datadir global-install     Makes the data dir available to all ssh processes for the current user

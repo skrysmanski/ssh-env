@@ -93,13 +93,13 @@ The contents of this directory are:
 
 To create this directory from scratch, call:
 
-    $ ./ssh-env datadir init
+    $ ./ssh-env datadir create
 
 You'll be asked a series of questions.
 
 **Note:** When you're asked for the "passphrase" for the rsa key pair, it's highly recommended that use **a strong password** here.
 
-    $ ./ssh-env datadir init
+    $ ./ssh-env datadir create
     Do you have an SSH key pair (in case of doubt: no)? (y/n): n
 
     Who does this key pair belong to? [manski]:
@@ -311,11 +311,11 @@ As far as synchronizing is concerned, an ssh-env directory is comprised of three
 
 The root directory is (usually) already version controlled under Git - so you can use Git to put it on other computers.
 
-If you used `./ssh-env datadir init` to create your data directory, ssh-env gave you the option to create a Git repository for the data directory. In this case, you use Git to synchronize your ssh data between computers. On another computer you can then use this command to get your ssh data:
+If you used `./ssh-env datadir create` to create your data directory, ssh-env gave you the option to create a Git repository for the data directory. In this case, you use Git to synchronize your ssh data between computers. On another computer you can then use this command to get your ssh data:
 
     ./ssh-env datadir clone
 
-*Note:* While ssh-env uses Git internally for `datadir init/clone`, you can use any other version control system you like (like Mercurial or even Subversion) to version your ssh data directory. ssh-env doesn't mind.
+*Note:* While ssh-env uses Git internally for `datadir create/clone`, you can use any other version control system you like (like Mercurial or even Subversion) to version your ssh data directory. ssh-env doesn't mind.
 
 The third part (`./local/`) should not be synchronized. So there's nothing you need to do here.
 
