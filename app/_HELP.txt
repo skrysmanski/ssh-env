@@ -2,7 +2,7 @@ Usage:
   ssh-env [ssh] [<user>@]<ssh-server>
   ssh-env agent (status|stop|config)
   ssh-env datadir (init|clone|global-install|global-uninstall)
-  ssh-env keys (create|install|check|load)
+  ssh-env key (create|install|check|load)
   ssh-env (help|--help|-h)
   ssh-env (version|--version|-v)
 
@@ -21,12 +21,13 @@ Commands:
                              (by overwriting ~/.ssh/config)
   datadir global-uninstall   ssh-env no longer manages ~/.ssh/config
 
-  keys create                Create SSH key pair (bcrypt encrypted)
-  keys install [<user>@]<ssh-server>[:port]
-                             Installs the public key on the specified server (requires password
-                             authentication)
-  keys check                 Checks the SSH key pair for problems (no password, weak encryption)
-  keys load                  Loads the configured SSH key pair into the ssh-agent
+  key create                 Creates a new private key (bcrypt encrypted)
+  key install [<user>@]<ssh-server>[:port]
+                             Installs your public key on the specified server (requires password
+                             authentication to be enabled on the server)
+  key check                  Checks your private key for problems (no password, weak encryption)
+  key load                   Loads your private key into the ssh-agent (so that it can be used
+                             by applications other than ssh-env)
 
   help, --help, -h           Displays this help page
   version, --version, -v     Prints the ssh-env and OpenSSH client version

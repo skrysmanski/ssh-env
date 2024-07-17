@@ -148,10 +148,10 @@ function Invoke-SshEnvApp {
 		}
 
 
-		'keys' {
+		'key' {
 			switch ($args[1]) {
 				'create' {
-					New-SshKey
+					New-SshKeyPair
 					break
 				}
 
@@ -186,12 +186,12 @@ function Invoke-SshEnvApp {
 				}
 
 				'' {
-					Write-HelpAndExit "Missing 'keys' command"
+					Write-HelpAndExit "Missing 'key' command"
 					break
 				}
 
 				default {
-					Write-HelpAndExit "Unknown 'keys' command: $($args[1])"
+					Write-HelpAndExit "Unknown 'key' command: $($args[1])"
 					break
 				}
 			}

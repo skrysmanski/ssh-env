@@ -5,7 +5,7 @@ Import-Module "$PSScriptRoot/Installation.psm1"
 Import-Module "$PSScriptRoot/Utils.psm1"
 Import-Module "$PSScriptRoot/SshConfig.psm1"
 
-function New-SshKey {
+function New-SshKeyPair {
 	$sshEnvCommands = Get-SshEnvCommands
 
 	# Request the user's name from the user. Note this is actually just
@@ -13,7 +13,7 @@ function New-SshKey {
 	# "install-key". There it is then used to make it easier to differentiate
 	# the various authorized keys (as stored in "~/.ssh/authorized_keys").
 	$userName = [Environment]::UserName
-	$keyPairComment = Read-TextPrompt "Who does this key pair belong to?" -DefaultValue $userName
+	$keyPairComment = Read-TextPrompt "Who does this SSH key belong to?" -DefaultValue $userName
 
 	$sshPrivateKeyPath = Get-SshPrivateKeyPath -CreateDirIfNotExists $true
 
@@ -31,7 +31,7 @@ function New-SshKey {
 
 	Assert-CorrectSshKeyPermissions
 }
-Export-ModuleMember -Function New-SshKey
+Export-ModuleMember -Function New-SshKeyPair
 
 function Install-SshKey([String] $SshTarget) {
 	$sshEnvCommands = Get-SshEnvCommands
@@ -41,7 +41,7 @@ function Install-SshKey([String] $SshTarget) {
 	$sshPublicKeyPath = Get-SshPublicKeyPath
 
 	if (-Not (Test-Path $sshPublicKeyPath -PathType Leaf)) {
-		Write-Error "No public key file exists at: $sshPublicKeyPath`nYou can create your SSH key pair with 'ssh-env keys create'."
+		Write-Error "No public key file exists at: $sshPublicKeyPath`nYou can create your SSH key pair with 'ssh-env key create'."
 	}
 
 	$publicKey = Get-Content $sshPublicKeyPath -Encoding 'utf8'

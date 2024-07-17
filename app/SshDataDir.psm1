@@ -61,7 +61,7 @@ function Initialize-DataDirFromScratch {
 	$hasSshKey = Read-YesNoPrompt 'Do you have an SSH key pair (in case of doubt: no)?'
 	if (-Not $hasSshKey) {
 		Write-Host
-		New-SshKey
+		New-SshKeyPair
 		Write-Host
 	}
 
