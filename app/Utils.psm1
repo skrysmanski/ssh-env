@@ -13,7 +13,7 @@ $script:Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
 
 # NOTE: This function is necessary on PowerShell versions less than 6.0. Starting with
 #   6.0, the default utf8 encoding doesn't seem to include the BOM anymore.
-# NOTE 2: This method does get its contents from a pipeline because this would make the
+# NOTE 2: This method doesn't get its contents from a pipeline because this would make the
 #   code unnecessary complicated to read.
 function Write-FileUtf8NoBom([string] $FilePath, $Contents) {
 	# NOTE: We can't use the Out-File cmdlet here as it doesn't accept a custom encoding.
