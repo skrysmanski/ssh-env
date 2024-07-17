@@ -5,6 +5,7 @@ Import-Module "$PSScriptRoot/Installation.psm1"
 Import-Module "$PSScriptRoot/Utils.psm1"
 Import-Module "$PSScriptRoot/SshAgentConf.psm1"
 Import-Module "$PSScriptRoot/SshAgentEnv.psm1"
+Import-Module "$PSScriptRoot/1Password.psm1"
 
 Enum SshAgentStatus {
 	RunningWithKey = 0
@@ -16,6 +17,16 @@ Enum SshAgentStatus {
 # Returns the status of the ssh-agent.
 #
 function Get-SshAgentStatus {
+	$agentConf = Get-SshAgentConfig
+	if ($agentConf.Use1PasswordSshAgent) {
+		if (Test-Is1PasswordSshAgentEnabled) {
+			return [SshAgentStatus]::RunningWithKey
+		}
+		else {
+			return [SshAgentStatus]::NotRunning
+		}
+	}
+
 	$sshEnvCommands = Get-SshEnvCommands
 	if (Test-IsMicrosoftSsh) {
 		$sshAgentService = Get-Service 'ssh-agent'
@@ -57,11 +68,17 @@ Export-ModuleMember -Function Get-SshAgentStatus
 #
 function Write-SshAgentStatus {
 	$agentStatus = Get-SshAgentStatus
+	$agentConf = Get-SshAgentConfig
 
 	Write-Host -NoNewline 'ssh-agent: '
 	switch ($agentStatus) {
 		RunningWithKey {
-			Write-Host -NoNewline -ForegroundColor Green 'running (keys loaded)'
+			if ($agentConf.Use1PasswordSshAgent) {
+				Write-Host -NoNewline -ForegroundColor Green 'enabled'
+			}
+			else {
+				Write-Host -NoNewline -ForegroundColor Green 'running (keys loaded)'
+			}
 			break
 		}
 
@@ -71,7 +88,12 @@ function Write-SshAgentStatus {
 		}
 
 		NotRunning {
-			Write-Host -NoNewline -ForegroundColor Yellow 'not running'
+			if ($agentConf.Use1PasswordSshAgent) {
+				Write-Host -NoNewline -ForegroundColor Yellow 'disabled'
+			}
+			else {
+				Write-Host -NoNewline -ForegroundColor Yellow 'not running'
+			}
 			break
 		}
 
@@ -81,7 +103,10 @@ function Write-SshAgentStatus {
 		}
 	}
 
-	if (Test-IsMicrosoftSsh) {
+	if ($agentConf.Use1PasswordSshAgent) {
+		Write-Host -ForegroundColor DarkGray " [1Password SSH agent]"
+	}
+	elseif (Test-IsMicrosoftSsh) {
 		$sshAgentService = Get-Service 'ssh-agent'
 		Write-Host -ForegroundColor DarkGray " [Windows Service '$($sshAgentService.DisplayName)']"
 	}
