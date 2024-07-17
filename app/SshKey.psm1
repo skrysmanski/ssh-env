@@ -39,6 +39,11 @@ function Install-SshKey([String] $SshTarget) {
 	$sshConfigPath = Assert-SshConfigIsUpToDate
 
 	$sshPublicKeyPath = Get-SshPublicKeyPath
+
+	if (-Not (Test-Path $sshPublicKeyPath -PathType Leaf)) {
+		Write-Error "No public key file exists at: $sshPublicKeyPath`nYou can create your SSH key pair with 'ssh-env keys create'."
+	}
+
 	$publicKey = Get-Content $sshPublicKeyPath -Encoding 'utf8'
 
 	# Use ':' to separate port in this case.
