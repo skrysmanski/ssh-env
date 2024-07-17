@@ -58,11 +58,14 @@ Export-ModuleMember -Function Initialize-DataDirViaGitClone
 function Initialize-DataDirFromScratch {
 	Assert-SshDataDirDoesntExist
 
-	$hasSshKey = Read-YesNoPrompt 'Do you have an SSH key pair (in case of doubt: no)?'
-	if (-Not $hasSshKey) {
-		Write-Host
-		New-SshKeyPair
-		Write-Host
+	$sshAgentConf = Get-SshAgentConfig -CreateIfNotExists
+	if (-Not $sshAgentConf.Use1PasswordSshAgent) {
+		$hasSshKey = Read-YesNoPrompt 'Do you have an SSH key pair (in case of doubt: no)?'
+		if (-Not $hasSshKey) {
+			Write-Host
+			New-SshKeyPair
+			Write-Host
+		}
 	}
 
 	$sshDataPath = Get-SshDataPath -CreateIfNotExists $true
@@ -109,7 +112,7 @@ function Initialize-DataDirFromScratch {
 	Write-Host -ForegroundColor Green 'sucess'
 	Write-Host
 
-	if (-Not $hasSshKey) {
+	if (-Not $sshAgentConf.Use1PasswordSshAgent -And -Not $hasSshKey) {
 		$sshPrivateKeyPath = Get-SshPrivateKeyPath
 		$sshPublicKeyPath = Get-SshPublicKeyPath
 
