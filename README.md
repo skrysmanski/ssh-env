@@ -142,7 +142,7 @@ Now you're all set to interact with your first SSH server.
 
 The next step is to install your *public* key on the server you want to connect to. (If you've imported a SSH key pair and the public key is already on the target server, you can skip this step.)
 
-    $ ./ssh-env keys install user@targetserver
+    $ ./ssh-env key install user@targetserver
 
 That's it. Now you should be able to ssh into the target server.
 
@@ -350,10 +350,10 @@ If you already have an SSH key pair and are certain that you want to use it (i.e
 **Important:** Only checkin the *end* result of the following steps into Git (or the version control system of your choice). Do *not* check in results of any intermediary step.
 
  1. Copy your *private* key file into the `ssh-data` directory and name it `id_rsa`. Also copy your *public* key file into the `ssh-data` directory and name it `id_rsa.pub`. Make sure that you do *not* confuse these two files.
- 1. Run `./ssh-env keys check`
+ 1. Run `./ssh-env key check`
  1. If this shows `Encryption: encrypted, strong`, you're all set. You can skip to step 6. If not, or if you want to change the encryption password for the private key, continue with the next step.
  1. Go into the `ssh-data` directory and execute `ssh-keygen -o -p -f id_rsa`
- 1. Run `./ssh-env keys check` again and check that it prints out `Encryption: encrypted, strong`
+ 1. Run `./ssh-env key check` again and check that it prints out `Encryption: encrypted, strong`
  1. Check in both `id_rsa` and `id_rsa.pub`.
 
 That's it.
@@ -376,7 +376,7 @@ To install your data dir globally, call:
 
 To make your private key available to SSH-based tools, you can either connect to a host or call:
 
-    ./ssh-env keys load
+    ./ssh-env key load
 
 **Tip:** This feature works great with [Visual Studio Code's Remote Development](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh) extension.
 
