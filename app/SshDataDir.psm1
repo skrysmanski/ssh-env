@@ -109,7 +109,7 @@ function Initialize-DataDirFromScratch {
 	Write-Host -ForegroundColor Green 'sucess'
 	Write-Host
 
-	if ($hasSshKey) {
+	if (-Not $hasSshKey) {
 		$sshPrivateKeyPath = Get-SshPrivateKeyPath
 		$sshPublicKeyPath = Get-SshPublicKeyPath
 
