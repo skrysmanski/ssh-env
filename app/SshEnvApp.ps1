@@ -99,6 +99,10 @@ function Invoke-SshEnvApp {
 				}
 
 				'status' {
+					# Make sure the generated ssh_config is up-to-date so that it can be
+					# checked by the user, if necessary.
+					Assert-SshConfigIsUpToDate | Out-Null
+
 					$dataDirExists = Test-SshDataDirExists
 					Write-Host -NoNewline 'DataDir exists:                '
 

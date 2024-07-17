@@ -86,14 +86,20 @@ Export-ModuleMember -Function Get-SshPublicKeyPath
 # stored on disk.
 #
 function Get-RuntimeSshConfig {
-	$sshConfigPath = Get-SshConfigPath -RuntimeConfig $false
-	if (Test-Path $sshConfigPath) {
-		$sshConfig = Get-Content $sshConfigPath -Encoding 'utf8' -Raw
+	#
+	# Read custom ssh config part from user's data dir.
+	#
+	$userSshConfigPath = Get-SshConfigPath -RuntimeConfig $false
+	if (Test-Path $userSshConfigPath) {
+		$userSshConfig = Get-Content $userSshConfigPath -Encoding 'utf8' -Raw
 	}
 	else {
-		$sshConfig = ''
+		$userSshConfig = ''
 	}
 
+	#
+	# Determine 'IdentityAgent' configuration
+	#
 	$sshAgentConf = Get-SshAgentConfig -CreateIfNotExists
 	if ($sshAgentConf -and $sshAgentConf.useSshAgent) {
 		$sshAgentStatus = Get-SshAgentStatus
@@ -103,7 +109,8 @@ function Get-RuntimeSshConfig {
 		}
 
 		if (Test-IsMicrosoftSsh) {
-			$identityAgentDeclaration = "# not required by Microsoft's SSH implementation"
+			# 'IdentityAgent' is not required by Microsoft's SSH implementation because it's implemented as service.
+			$identityAgentDeclaration = "# Using Microsoft's SSH agent service."
 		}
 		else {
 			$sshAgentSockFilePath = Get-SshAgentSockFilePath
@@ -112,20 +119,34 @@ function Get-RuntimeSshConfig {
 				throw 'Could not determine ssh-agent auth sock path.'
 			}
 
-			$identityAgentDeclaration = "IdentityAgent $sshAgentSockFilePath"
+			$identityAgentDeclaration = @"
+# By specifying this, the ssh-agent of ssh-env can be used by other processes
+# by just referencing this config file.
+IdentityAgent $sshAgentSockFilePath
+"@
 		}
 	}
 	else {
-		$identityAgentDeclaration = 'IdentityAgent none'
+		$identityAgentDeclaration = @"
+# Don't use ssh-agent.
+IdentityAgent none
+"@
 	}
 
+	#
+	# Create ssh config contents
+	#
 	$sshEnvPath = Get-SshEnvPath -CreateIfNotExists $false
 	$sshDataPath = Get-SshDataPath
 	$privateKeyPath = Get-SshPrivateKeyPath
 	$knownHostsPath = [IO.Path]::Combine($sshDataPath, 'known_hosts')
 
 	return @"
-# IMPORTANT: This file is AUTO-GENERATED. Do NOT edit manually!!!
+##################################################################################################################
+#                                                                                                                #
+# IMPORTANT: This file is AUTO-GENERATED and overwritten on every use of 'ssh-env'. Do NOT edit manually!!!      #
+#                                                                                                                #
+##################################################################################################################
 
 # Using ssh-env from: $sshEnvPath
 
@@ -141,8 +162,7 @@ UserKnownHostsFile $knownHostsPath
 # Location of the private key file.
 IdentityFile $privateKeyPath
 
-# By specifying this, the ssh-agent of ssh-env can be used by other processes
-# by just referencing this config file.
+# SSH agent configuration
 $identityAgentDeclaration
 
 # Prevents ssh from adding the SSH key to the ssh-agent.
@@ -154,7 +174,7 @@ AddKeysToAgent no
 
 ###################################
 
-$sshConfig
+$userSshConfig
 "@
 }
 
