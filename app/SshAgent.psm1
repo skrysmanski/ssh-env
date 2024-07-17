@@ -126,7 +126,15 @@ Export-ModuleMember -Function Write-SshAgentStatus
 # Starts a new ssh-agent instance and stores its env variables on disk.
 #
 function Start-SshAgent {
-	if (Test-IsMicrosoftSsh) {
+	$agentConf = Get-SshAgentConfig
+
+	if ($agentConf.Use1PasswordSshAgent) {
+		$agentStatus = Get-SshAgentStatus
+		if ($agentStatus -ne [SshAgentStatus]::RunningWithKey) {
+			Write-Error "The 1Password SSH agent is not enabled. Enable it through 1Password's `"Developer`" settings."
+		}
+	}
+	elseif (Test-IsMicrosoftSsh) {
 		Write-Host -ForegroundColor DarkGray 'Starting ssh-agent service'
 
 		$sshAgentService = Get-Service 'ssh-agent'
@@ -207,7 +215,11 @@ function Stop-SshAgent {
 		return $false
 	}
 
-	if (Test-IsMicrosoftSsh) {
+	$agentConf = Get-SshAgentConfig
+	if ($agentConf.Use1PasswordSshAgent) {
+		Write-Error "The 1Password SSH agent can't be stopped this way. You have to disable it through 1Password's `"Developer`" settings."
+	}
+	elseif (Test-IsMicrosoftSsh) {
 		if ($agentStatus -eq [SshAgentStatus]::RunningWithoutKey) {
 			# No key is loaded.
 			return $false
