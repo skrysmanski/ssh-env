@@ -34,9 +34,12 @@ function Invoke-SshEnvApp {
 	# Make sure everything is installed properly.
 	$sshEnvCommands = Get-SshEnvCommands
 
-	if (Test-IsMicrosoftSsh) {
+	if ((Test-IsMicrosoftSsh) -And -Not (Test-Use1PasswordSshAgent)) {
 		# Warn about Microsoft's SSH implementation.
 		# For bugs, see: https://github.com/PowerShell/Win32-OpenSSH/issues/
+		#
+		# NOTE: We don't warn about this if 1Password's SSH agent is used as it only works with Microsoft's
+		#   OpenSSH client.
 		Write-Host -ForegroundColor Yellow "Using Microsoft's OpenSSH client - some things may not work as expected!"
 	}
 
