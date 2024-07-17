@@ -244,6 +244,10 @@ function Add-SshKeyToRunningAgent([String] $SshPrivateKeyPath, [int] $KeyTimeToL
 	}
 }
 
+#
+# Makes sure the SSH agent is in the correct state (i.e. running if the SSH agent is supposed to be used, stopped if no
+# SSH agent is supposed to be used).
+#
 function Assert-SshAgentState([String] $SshPrivateKeyPath) {
 	if (-Not (Test-Path $SshPrivateKeyPath)) {
 		Write-Error "Private SSH key doesn't exist at: $SshPrivateKeyPath`nDid you run: ssh-env datadir create/clone ?"

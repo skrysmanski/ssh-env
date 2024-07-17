@@ -62,6 +62,13 @@ function Initialize-SshAgentConfig {
 }
 Export-ModuleMember -Function Initialize-SshAgentConfig
 
+#
+# Returns the desired configuration of the SSH agent (e.g. whether to use, what time-to-live for keys, ...).
+#
+# If no configuration exists yet, returns $null by default.
+#
+# However, if "-CreateIfNotExists" is specified, the user is prompted for the configuration in this case.
+#
 function Get-SshAgentConfig([switch] $CreateIfNotExists) {
 	$configFilePath = Get-SshAgentConfigFilePath
 
