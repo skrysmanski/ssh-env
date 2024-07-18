@@ -114,8 +114,16 @@ function Get-RuntimeSshConfig {
 	#
 	if ($sshAgentConf.UseSshAgent) {
 		if ($sshAgentConf.Use1PasswordSshAgent) {
-			# 'IdentityAgent' is not required when using 1Password as SSH agent.
-			$identityAgentDeclaration = "# Using 1Password's SSH agent service."
+			if (Test-IsWindows) {
+				# 'IdentityAgent' is not required when using 1Password as SSH agent on Windows.
+				$identityAgentDeclaration = "# Using 1Password's SSH agent service."
+			}
+			elseif ($IsMacOS) {
+				$identityAgentDeclaration = 'IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"'
+			}
+			else {
+				throw "not implemented/supported"
+			}
 		}
 		else {
 			$sshAgentStatus = Get-SshAgentStatus

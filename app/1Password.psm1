@@ -10,7 +10,7 @@ $script:ErrorActionPreference = 'Stop'
 Import-Module "$PSScriptRoot/Utils.psm1"
 
 function Test-Is1PasswordIntegrationSupported() {
-	return Test-IsWindows -or $IsMacOs
+	return (Test-IsWindows) -or $IsMacOs
 }
 Export-ModuleMember -Function Test-Is1PasswordIntegrationSupported
 
@@ -34,7 +34,7 @@ function Get-1PasswordSettingsFilePath() {
 		return "$([Environment]::GetFolderPath('LocalApplicationData'))\1Password\settings\settings.json"
 	}
 	elseif ($IsMacOs) {
-		throw 'macOS support for 1password detection is not yet implemented'
+		return "~/Library/Group Containers/2BUA8C4S2C.com.1password/Library/Application Support/1Password/Data/settings/settings.json"
 	}
 	else {
 		throw 'The 1Password intergration is not supported for the current operating system.'
