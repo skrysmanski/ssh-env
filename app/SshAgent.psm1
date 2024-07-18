@@ -62,38 +62,36 @@ function Write-SshAgentStatus {
 	switch ($agentStatus) {
 		RunningWithKey {
 			Write-Host -NoNewline -ForegroundColor Green 'running (keys loaded)'
-			if (Test-IsMicrosoftSsh) {
-				$sshAgentService = Get-Service 'ssh-agent'
-				Write-Host -ForegroundColor DarkGray " [service: $($sshAgentService.DisplayName)]"
-			}
-			else {
-				$sshAgentPid = Get-SshAgentPid
-				Write-Host -ForegroundColor DarkGray " [PID: $sshAgentPid]"
-			}
 			break
 		}
 
 		RunningWithoutKey {
 			Write-Host -NoNewline -ForegroundColor Green 'running (no keys loaded)'
-			if (Test-IsMicrosoftSsh) {
-				$sshAgentService = Get-Service 'ssh-agent'
-				Write-Host -ForegroundColor DarkGray " [service: $($sshAgentService.DisplayName)]"
-			}
-			else {
-				$sshAgentPid = Get-SshAgentPid
-				Write-Host -ForegroundColor DarkGray " [PID: $sshAgentPid]"
-			}
 			break
 		}
 
 		NotRunning {
-			Write-Host -ForegroundColor Yellow 'not running'
+			Write-Host -NoNewline -ForegroundColor Yellow 'not running'
 			break
 		}
 
 		default {
-			Write-Host -ForegroundColor Red "unknown status ($agentStatus)"
+			Write-Host -NoNewline -ForegroundColor Red "unexpected status ($agentStatus)"
 			break
+		}
+	}
+
+	if (Test-IsMicrosoftSsh) {
+		$sshAgentService = Get-Service 'ssh-agent'
+		Write-Host -ForegroundColor DarkGray " [Windows Service '$($sshAgentService.DisplayName)']"
+	}
+	else {
+		if ($agentStatus -eq [SshAgentStatus]::RunningWithKey -or $agentStatus -eq [SshAgentStatus]::RunningWithoutKey) {
+			$sshAgentPid = Get-SshAgentPid
+			Write-Host -ForegroundColor DarkGray " [PID: $sshAgentPid]"
+		}
+		else {
+			Write-Host
 		}
 	}
 }
