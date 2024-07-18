@@ -1,3 +1,9 @@
+#
+# Module for 1Password integration
+#
+# See: https://developer.1password.com/docs/ssh/get-started
+#
+
 # Stop on every error
 $script:ErrorActionPreference = 'Stop'
 
@@ -6,6 +12,7 @@ Import-Module "$PSScriptRoot/Utils.psm1"
 function Test-Is1PasswordIntegrationSupported() {
 	return Test-IsWindows -or $IsMacOs
 }
+Export-ModuleMember -Function Test-Is1PasswordIntegrationSupported
 
 function Test-Is1PasswordInstalled() {
 	if (-Not (Test-Is1PasswordIntegrationSupported)) {
