@@ -103,8 +103,6 @@ Export-ModuleMember -Function Write-SshAgentStatus
 # Starts a new ssh-agent instance and stores its env variables on disk.
 #
 function Start-SshAgent {
-
-
 	if (Test-IsMicrosoftSsh) {
 		Write-Host -ForegroundColor DarkGray 'Starting ssh-agent service'
 
