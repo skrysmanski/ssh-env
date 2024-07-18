@@ -106,7 +106,7 @@ function Get-RuntimeSshConfig {
 	}
 	else {
 		$privateKeyPath = Get-SshPrivateKeyPath
-		$identityFileDeclaration = "IdentityFile $privateKeyPath"
+		$identityFileDeclaration = "IdentityFile `"$privateKeyPath`""
 	}
 
 	#
@@ -138,7 +138,7 @@ function Get-RuntimeSshConfig {
 				$identityAgentDeclaration = @"
 # By specifying this, the ssh-agent of ssh-env can be used by other processes
 # by just referencing this config file.
-IdentityAgent $sshAgentSockFilePath
+IdentityAgent "$sshAgentSockFilePath"
 "@
 			}
 		}
@@ -173,7 +173,7 @@ IdentityAgent none
 # IMPORTANT: The next two options are specified here (rather than via the commandline)
 #   to make multi-hop SSH hosts (i.e. ProxyCommand) easier.
 # Location of the "known_hosts" file.
-UserKnownHostsFile $knownHostsPath
+UserKnownHostsFile "$knownHostsPath"
 
 # Location of the private key file
 $identityFileDeclaration
