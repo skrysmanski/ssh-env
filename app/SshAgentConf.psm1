@@ -4,6 +4,7 @@ $script:ErrorActionPreference = 'Stop'
 Import-Module "$PSScriptRoot/Installation.psm1"
 Import-Module "$PSScriptRoot/SshEnvPaths.psm1"
 Import-Module "$PSScriptRoot/Utils.psm1"
+Import-Module "$PSScriptRoot/1Password.psm1"
 
 function Get-SshAgentConfigFilePath {
 	$localDataPath = Get-SshLocalDataPath
@@ -16,24 +17,32 @@ function Initialize-SshAgentConfig {
 	$sshEnvCommands = Get-SshEnvCommands
 
 	$useSshAgent = Read-YesNoPrompt 'Do you want to use ssh-agent?' -DefaultValue $true
+	$use1PasswordSshAgent = $false
 
 	if ($useSshAgent -eq 'y') {
 		$useSshAgent = $true
 
-		if (Test-IsMicrosoftSsh) {
-			# Microsoft SSH-agent implementation doesn't support time-to-live for SSH keys.
-			# See: https://github.com/PowerShell/Win32-OpenSSH/issues/1510
-			# See: https://github.com/PowerShell/Win32-OpenSSH/issues/1056
-			$confirm = Read-YesNoPrompt "Microsoft's ssh-agent implementation stores private keys indefinitely (even through a reboot). Do you still want to use ssh-agent?"
-			if ($confirm) {
-				$keyTimeToLive = 0
+		if (Test-Is1PasswordInstalled) {
+			$use1PasswordSshAgent = Read-YesNoPrompt "1Password is installed. Do you want to use 1Password's SSH agent?" -DefaultValue $true
+			$keyTimeToLive = 0
+		}
+
+		if (-Not $use1PasswordSshAgent) {
+			if (Test-IsMicrosoftSsh) {
+				# Microsoft SSH-agent implementation doesn't support time-to-live for SSH keys.
+				# See: https://github.com/PowerShell/Win32-OpenSSH/issues/1510
+				# See: https://github.com/PowerShell/Win32-OpenSSH/issues/1056
+				$confirm = Read-YesNoPrompt "Microsoft's ssh-agent implementation stores private keys indefinitely (even through a reboot). Do you still want to use ssh-agent?"
+				if ($confirm) {
+					$keyTimeToLive = 0
+				}
+				else {
+					Write-Error 'Aborting'
+				}
 			}
 			else {
-				Write-Error 'Aborting'
+				$keyTimeToLive = Read-IntegerPrompt "How long should the private key be kept in memory (seconds; 0 = forever)" -DefaultValue $DEFAULT_KEY_TTL
 			}
-		}
-		else {
-			$keyTimeToLive = Read-IntegerPrompt "How long should the private key be kept in memory (seconds; 0 = forever)" -DefaultValue $DEFAULT_KEY_TTL
 		}
 	}
 	else {
@@ -44,6 +53,7 @@ function Initialize-SshAgentConfig {
 
 	$data = @{
 		UseSshAgent = $useSshAgent
+		Use1PasswordSshAgent = $use1PasswordSshAgent
 		KeyTimeToLive = $keyTimeToLive
 		ConfiguredSsh = $sshEnvCommands.Ssh
 	}
@@ -105,3 +115,18 @@ function Get-SshAgentConfig([switch] $CreateIfNotExists) {
 	return $config
 }
 Export-ModuleMember -Function Get-SshAgentConfig
+
+#
+# Returns whether the 1Password SSH agent is used.
+#
+function Test-Use1PasswordSshAgent() {
+	$agentConf = Get-SshAgentConfig
+
+	if ($agentConf -And $agentConf.UseSshAgent -And $agentConf.Use1PasswordSshAgent) {
+		return $true
+	}
+	else {
+		return $false
+	}
+}
+Export-ModuleMember -Function Test-Use1PasswordSshAgent

@@ -29,5 +29,6 @@ Commands:
   key load                   Loads your private key into the ssh-agent (so that it can be used
                              by applications other than ssh-env)
 
+  sysinfo                    Displays various information about the system
   help, --help, -h           Displays this help page
   version, --version, -v     Prints the ssh-env and OpenSSH client version

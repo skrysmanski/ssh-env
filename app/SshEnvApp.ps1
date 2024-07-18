@@ -12,6 +12,7 @@ Import-Module "$PSScriptRoot/SshEnvAppAux.psm1"
 Import-Module "$PSScriptRoot/Installation.psm1"
 Import-Module "$PSScriptRoot/SshDataDir.psm1"
 Import-Module "$PSScriptRoot/SshConfig.psm1"
+Import-Module "$PSScriptRoot/SysInfo.psm1"
 
 if ($args.Length -eq 0) {
 	Write-Help 'No command specified'
@@ -34,9 +35,12 @@ function Invoke-SshEnvApp {
 	# Make sure everything is installed properly.
 	$sshEnvCommands = Get-SshEnvCommands
 
-	if (Test-IsMicrosoftSsh) {
+	if ((Test-IsMicrosoftSsh) -And -Not (Test-Use1PasswordSshAgent)) {
 		# Warn about Microsoft's SSH implementation.
 		# For bugs, see: https://github.com/PowerShell/Win32-OpenSSH/issues/
+		#
+		# NOTE: We don't warn about this if 1Password's SSH agent is used as it only works with Microsoft's
+		#   OpenSSH client.
 		Write-Host -ForegroundColor Yellow "Using Microsoft's OpenSSH client - some things may not work as expected!"
 	}
 
@@ -181,8 +185,13 @@ function Invoke-SshEnvApp {
 						# used by external processes.
 						Assert-SshConfigIsUpToDate | Out-Null
 
-						$privateKeyPath = Get-SshPrivateKeyPath
-						Assert-SshAgentState -SshPrivateKeyPath $privateKeyPath
+						if ($agentConf.Use1PasswordSshAgent) {
+							Write-Host -ForegroundColor Green "SSH keys don't need to be loaded if 1Password's SSH agent is used."
+						}
+						else {
+							$privateKeyPath = Get-SshPrivateKeyPath
+							Assert-SshAgentState -SshPrivateKeyPath $privateKeyPath
+						}
 					}
 					else {
 						Write-Error 'Use of ssh-agent is disabled by configuration.'
@@ -200,6 +209,11 @@ function Invoke-SshEnvApp {
 					break
 				}
 			}
+			break
+		}
+
+		'sysinfo' {
+			Write-SysInfo
 			break
 		}
 

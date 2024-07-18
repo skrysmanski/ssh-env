@@ -98,32 +98,57 @@ function Get-RuntimeSshConfig {
 	}
 
 	#
-	# Determine 'IdentityAgent' configuration
+	# Determine 'IdentityFile' configuration
 	#
 	$sshAgentConf = Get-SshAgentConfig -CreateIfNotExists
-	if ($sshAgentConf -and $sshAgentConf.useSshAgent) {
-		$sshAgentStatus = Get-SshAgentStatus
+	if ($sshAgentConf.Use1PasswordSshAgent) {
+		$identityFileDeclaration = '# The private key is provided by 1Password.'
+	}
+	else {
+		$privateKeyPath = Get-SshPrivateKeyPath
+		$identityFileDeclaration = "IdentityFile `"$privateKeyPath`""
+	}
 
-		if ($sshAgentStatus -eq 'NotRunning') {
-			Start-SshAgent
-		}
-
-		if (Test-IsMicrosoftSsh) {
-			# 'IdentityAgent' is not required by Microsoft's SSH implementation because it's implemented as service.
-			$identityAgentDeclaration = "# Using Microsoft's SSH agent service."
+	#
+	# Determine 'IdentityAgent' configuration
+	#
+	if ($sshAgentConf.UseSshAgent) {
+		if ($sshAgentConf.Use1PasswordSshAgent) {
+			if (Test-IsWindows) {
+				# 'IdentityAgent' is not required when using 1Password as SSH agent on Windows.
+				$identityAgentDeclaration = "# Using 1Password's SSH agent service."
+			}
+			elseif ($IsMacOS) {
+				$identityAgentDeclaration = 'IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"'
+			}
+			else {
+				throw "not implemented/supported"
+			}
 		}
 		else {
-			$sshAgentSockFilePath = Get-SshAgentSockFilePath
+			$sshAgentStatus = Get-SshAgentStatus
 
-			if (-Not $sshAgentSockFilePath) {
-				throw 'Could not determine ssh-agent auth sock path.'
+			if ($sshAgentStatus -eq 'NotRunning') {
+				Start-SshAgent
 			}
 
-			$identityAgentDeclaration = @"
+			if (Test-IsMicrosoftSsh) {
+				# 'IdentityAgent' is not required by Microsoft's SSH implementation because it's implemented as service.
+				$identityAgentDeclaration = "# Using Microsoft's SSH agent service."
+			}
+			else {
+				$sshAgentSockFilePath = Get-SshAgentSockFilePath
+
+				if (-Not $sshAgentSockFilePath) {
+					throw 'Could not determine ssh-agent auth sock path.'
+				}
+
+				$identityAgentDeclaration = @"
 # By specifying this, the ssh-agent of ssh-env can be used by other processes
 # by just referencing this config file.
-IdentityAgent $sshAgentSockFilePath
+IdentityAgent "$sshAgentSockFilePath"
 "@
+			}
 		}
 	}
 	else {
@@ -138,7 +163,6 @@ IdentityAgent none
 	#
 	$sshEnvPath = Get-SshEnvPath -CreateIfNotExists $false
 	$sshDataPath = Get-SshDataPath
-	$privateKeyPath = Get-SshPrivateKeyPath
 	$knownHostsPath = [IO.Path]::Combine($sshDataPath, 'known_hosts')
 
 	return @"
@@ -157,10 +181,10 @@ IdentityAgent none
 # IMPORTANT: The next two options are specified here (rather than via the commandline)
 #   to make multi-hop SSH hosts (i.e. ProxyCommand) easier.
 # Location of the "known_hosts" file.
-UserKnownHostsFile $knownHostsPath
+UserKnownHostsFile "$knownHostsPath"
 
-# Location of the private key file.
-IdentityFile $privateKeyPath
+# Location of the private key file
+$identityFileDeclaration
 
 # SSH agent configuration
 $identityAgentDeclaration
