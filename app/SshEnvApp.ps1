@@ -48,7 +48,7 @@ function Invoke-SshEnvApp {
 	Assert-CorrectSshKeyPermissions
 
 	switch -Regex ($args[0]) {
-		'agent' {
+		'^(agent)$' {
 			switch ($args[1]) {
 				'status' {
 					Write-SshAgentStatus
@@ -91,7 +91,7 @@ function Invoke-SshEnvApp {
 			break
 		}
 
-		'datadir' {
+		'^(datadir)$' {
 			switch ($args[1]) {
 				'clone' {
 					Initialize-DataDirViaGitClone
@@ -157,7 +157,7 @@ function Invoke-SshEnvApp {
 		}
 
 
-		'key' {
+		'^(key)$' {
 			switch ($args[1]) {
 				'create' {
 					New-SshKeyPair
@@ -212,12 +212,12 @@ function Invoke-SshEnvApp {
 			break
 		}
 
-		'sysinfo' {
+		'^(sysinfo)$' {
 			Write-SysInfo
 			break
 		}
 
-		'version|--version|-v' {
+		'^(version|--version|-v)$' {
 			$version = Get-EnvVersion
 			Write-Host "ssh-env version $version"
 
@@ -227,12 +227,12 @@ function Invoke-SshEnvApp {
 			break
 		}
 
-		'-h|--help|help' {
+		'^(-h|--help|help)$' {
 			Write-Help
 			break
 		}
 
-		'ssh' {
+		'^(ssh)$' {
 			$sshArgs = $args[1..$args.Length] # Remove first item ('ssh')
 			Invoke-SshWithAgent @sshArgs
 			break
